@@ -2,6 +2,7 @@ package client;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridLayout;
@@ -26,10 +27,10 @@ public class LoginWindow extends JFrame {
 	private JPanel contentPane, loginPane, idPane, passPane, buttonPane, inputPane;
 	private ImageIcon background, titleimg;
 	private JLabel title, lb_id, lb_passwd, lb_blank;
-
-	private JTextField tf_id;
-	private JPasswordField tf_passwd;
-	private JButton bt_login, bt_join, bt_idf, bt_pwf;
+	private JFrame join = null;
+	public JTextField tf_id;
+	public JPasswordField tf_passwd;
+	public JButton bt_login, bt_join, bt_idf, bt_pwf;
 	private int x = 340, y = 400;
 
 	public LoginWindow() {
@@ -94,29 +95,36 @@ public class LoginWindow extends JFrame {
 		buttonPane.add(bt_join);
 		buttonPane.add(bt_idf);
 		buttonPane.add(bt_pwf);
-		//버튼 액션
+		// 버튼 액션
 		bt_login.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					char[] pass=tf_passwd.getPassword();
-					String pass_1;
-					pass_1=new String(pass,0,pass.length);
-					memberDAO dao = new memberDAO();
-					int result = dao.Login(tf_id.getText(), pass_1);	
-					if(result==1) {
-						System.out.println("로그인 성공");
-					}else {
-						JOptionPane.showMessageDialog(null, "아이디와 비밀번호를 확인해주세요");
-					}
-				}catch(SQLException e1) {
-					e1.printStackTrace();
-				}
+				login();
 			}
 		});
 		
+		LoginWindow a = this;
+		bt_join.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				join = new Join(a);
+				dis_login();
+			}
+		});
 		
+		bt_idf.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dis_login();
+				new forgetID(a);
+			}
+		});
 		
-		//패널 추가
+		bt_pwf.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				dis_login();
+				new forgetPass(a);
+			}
+		});
+		// 패널 추가
 		lb_blank = new JLabel();
 		contentPane.add(lb_blank);
 		inputPane.add(idPane);
@@ -126,5 +134,32 @@ public class LoginWindow extends JFrame {
 		contentPane.add(loginPane);
 		setContentPane(contentPane);
 		setVisible(true);
+	}
+
+	private void login() {
+		try {
+			char[] pass = tf_passwd.getPassword();
+			String pass_1;
+			pass_1 = new String(pass, 0, pass.length);
+			memberDAO dao = new memberDAO();
+			int result = dao.Login(tf_id.getText(), pass_1);
+			if (result == 1) {
+				System.out.println("로그인 성공");
+
+			} else {
+				JOptionPane.showMessageDialog(null, "아이디와 비밀번호를 확인해주세요");
+			}
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+	}
+
+	private void dis_login() {
+		bt_login.setEnabled(false);
+		bt_pwf.setEnabled(false);
+		bt_idf.setEnabled(false);
+		bt_join.setEnabled(false);
+		tf_id.setEnabled(false);
+		tf_passwd.setEnabled(false);
 	}
 }
