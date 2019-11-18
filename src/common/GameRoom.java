@@ -1,10 +1,12 @@
 package common;
 
+import java.util.ArrayList;
+
 public class GameRoom {
 	private int seq;
 	private String rName;
 	private int curr_user;
-	private User user1, user2;
+	private ArrayList<User> users= new ArrayList<>();;
 	
 	
 	public int getSeq() {
@@ -25,16 +27,16 @@ public class GameRoom {
 	public void setCurr_user(int curr_user) {
 		this.curr_user = curr_user;
 	}
-	public User getUser1() {
-		return user1;
+	public ArrayList<User> getUsers() {
+		return users;
 	}
-	public void setUser1(User user1) {
-		this.user1 = user1;
+	public void setUsers(ArrayList<User> users) {
+		this.users = users;
 	}
-	public User getUser2() {
-		return user2;
+	public void addUser(User user) {
+		this.users.add(user);
 	}
-	public void setUser2(User user2) {
-		this.user2 = user2;
+	public void removeUser(User user) {
+		this.users.remove(user);
 	}
 }
