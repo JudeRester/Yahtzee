@@ -1,9 +1,10 @@
 package common;
 
 public class WaitingRoom {
-	private String id;
-	private String nickname;
-	private int win;
-	private int lose;
-	private int high;
+	private int seq;
+	private String rName;
+	private int curr_user;
+	private User user1, user2;
+	
+	
 }

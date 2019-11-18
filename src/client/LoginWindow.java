@@ -145,6 +145,7 @@ public class LoginWindow extends JFrame {
 			int result = dao.Login(tf_id.getText(), pass_1);
 			if (result == 1) {
 				System.out.println("로그인 성공");
+				new RoomList(tf_id.getText());
 
 			} else {
 				JOptionPane.showMessageDialog(null, "아이디와 비밀번호를 확인해주세요");
