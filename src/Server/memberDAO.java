@@ -31,9 +31,9 @@ public class memberDAO {
 			}
 		}catch(SQLException e) {
 			e.printStackTrace();
-		}finally {
-			DataBaseUtil.close(conn,pstmt,rs);
-		}
+		} /*
+			 * finally { DataBaseUtil.close(conn,pstmt,rs); }
+			 */
 		return cnt;
 	}
 	
@@ -134,5 +134,30 @@ public class memberDAO {
 			DataBaseUtil.close(conn,pstmt,rs);
 		}
 		return cnt;
+	}
+	
+	//회원 정보 받아오기
+	public User getUser(String id) {
+		User user=null;
+		StringBuffer sql = new StringBuffer();
+		sql.append("select * from member where id=?");
+		try {
+			user = new User();
+			pstmt = conn.prepareStatement(sql.toString());
+			pstmt.setString(1,id);
+			rs=pstmt.executeQuery();
+			while(rs.next()) {
+				user.setId(rs.getString("id"));
+				user.setNickname(rs.getString("nickname"));
+				user.setWin(rs.getInt("win"));
+				user.setLose(rs.getInt("lose"));
+				user.setHigh(rs.getInt("high"));
+			}
+		}catch(SQLException e){
+			e.printStackTrace();
+		}finally {
+			DataBaseUtil.close(conn,pstmt,rs);
+		}
+		return user;
 	}
 }

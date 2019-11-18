@@ -2,7 +2,6 @@ package client;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridLayout;
@@ -10,6 +9,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.sql.SQLException;
 
 import javax.swing.ImageIcon;
@@ -22,6 +23,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 import Server.memberDAO;
+import common.User;
 
 public class LoginWindow extends JFrame {
 	private JPanel contentPane, loginPane, idPane, passPane, buttonPane, inputPane;
@@ -80,7 +82,19 @@ public class LoginWindow extends JFrame {
 		lb_passwd.setForeground(Color.WHITE);
 		tf_id = new JTextField(10);
 		tf_passwd = new JPasswordField(10);
-
+		tf_passwd.addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+			}
+			@Override
+			public void keyReleased(KeyEvent e) {
+			}
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if(e.getKeyCode()==10)
+					login();
+			}
+		});
 		idPane.add(lb_id);
 		idPane.add(tf_id);
 		passPane.add(lb_passwd);
@@ -145,8 +159,9 @@ public class LoginWindow extends JFrame {
 			int result = dao.Login(tf_id.getText(), pass_1);
 			if (result == 1) {
 				System.out.println("로그인 성공");
-				new RoomList(tf_id.getText());
-
+				User user = dao.getUser(tf_id.getText());
+				new RoomList(user);
+				dispose();
 			} else {
 				JOptionPane.showMessageDialog(null, "아이디와 비밀번호를 확인해주세요");
 			}
