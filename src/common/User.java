@@ -1,6 +1,11 @@
 package common;
 
-public class User {
+import java.io.Serializable;
+import java.net.Socket;
+
+import Server.Server;
+
+public class User implements Serializable{
 	private String id, passwd, name, nickname, email;
 	private int win, lose, high;
 	
@@ -17,6 +22,10 @@ public class User {
 		this.email = email;
 	}
 	
+	public User(Server server, Socket socket) {
+		
+	}
+
 	public String getId() {
 		return id;
 	}

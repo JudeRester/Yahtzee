@@ -11,6 +11,16 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 
 import javax.swing.ImageIcon;
@@ -35,7 +45,20 @@ public class LoginWindow extends JFrame {
 	public JButton bt_login, bt_join, bt_idf, bt_pwf;
 	private int x = 340, y = 400;
 
+	private Socket socket;
+	private static final String SERVER_IP = "192.168.0.8";
+	private static final int SERVER_PORT = 8888;
+	private User user;
+
 	public LoginWindow() {
+		try {
+			socket = new Socket();
+			socket.connect(new InetSocketAddress(SERVER_IP, SERVER_PORT));
+			System.out.println("connected successfully");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 		setBounds(100, 100, x, y);
 		setLocationRelativeTo(null);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -86,12 +109,14 @@ public class LoginWindow extends JFrame {
 			@Override
 			public void keyTyped(KeyEvent e) {
 			}
+
 			@Override
 			public void keyReleased(KeyEvent e) {
 			}
+
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if(e.getKeyCode()==10)
+				if (e.getKeyCode() == 10)
 					login();
 			}
 		});
@@ -109,28 +134,29 @@ public class LoginWindow extends JFrame {
 		buttonPane.add(bt_join);
 		buttonPane.add(bt_idf);
 		buttonPane.add(bt_pwf);
+		
 		// 버튼 액션
 		bt_login.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				login();
 			}
 		});
-		
+
 		LoginWindow a = this;
 		bt_join.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				join = new Join(a);
+				join = new Join(a, socket);
 				dis_login();
 			}
 		});
-		
+
 		bt_idf.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dis_login();
 				new forgetID(a);
 			}
 		});
-		
+
 		bt_pwf.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -148,25 +174,36 @@ public class LoginWindow extends JFrame {
 		contentPane.add(loginPane);
 		setContentPane(contentPane);
 		setVisible(true);
+
+		// 서버 접속
+		
 	}
 
 	private void login() {
 		try {
+			PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8),true);
 			char[] pass = tf_passwd.getPassword();
-			String pass_1;
-			pass_1 = new String(pass, 0, pass.length);
-			memberDAO dao = new memberDAO();
-			int result = dao.Login(tf_id.getText(), pass_1);
-			if (result == 1) {
+			String request = "login::" + tf_id.getText() + "::" + new String(pass, 0, pass.length);
+			pw.println(request);
+			BufferedReader br = new BufferedReader(
+					new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+
+			System.out.println("$$$");
+			if (br.readLine().contentEquals("1")) {
 				System.out.println("로그인 성공");
-				User user = dao.getUser(tf_id.getText());
-				new RoomList(user);
-				dispose();
+				ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+				try {
+					user = (User) ois.readObject();
+					new RoomList(user);
+					dispose();
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				}
 			} else {
 				JOptionPane.showMessageDialog(null, "아이디와 비밀번호를 확인해주세요");
 			}
-		} catch (SQLException e1) {
-			e1.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
