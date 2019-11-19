@@ -153,7 +153,7 @@ public class LoginWindow extends JFrame {
 		bt_idf.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dis_login();
-				new forgetID(a);
+				new forgetID(a, socket);
 			}
 		});
 

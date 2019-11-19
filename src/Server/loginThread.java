@@ -58,6 +58,9 @@ public class loginThread extends Thread {
 					dao = new memberDAO();
 					User user = new User(tokens[1],tokens[2],tokens[3],tokens[4],tokens[5]);
 					pw.println(dao.join(user));
+				} else if("f_id".contentEquals(tokens[0])) {
+					dao = new memberDAO();
+					pw.println(dao.find_id(tokens[1], tokens[2]));
 				}
 			}
 		} catch (IOException e) {

@@ -166,13 +166,6 @@ public class Join extends JFrame {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-//		try {
-//			mDAO = new memberDAO();
-//			isSuccess = mDAO.join(user);
-//		} catch (SQLException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
 		return isSuccess;
 	}
 

@@ -7,7 +7,13 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.SQLException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -28,7 +34,7 @@ public class forgetID extends JFrame {
 	private GridBagLayout layout;
 	private memberDAO mDAO;
 
-	public forgetID(LoginWindow pane) {
+	public forgetID(LoginWindow pane, Socket socket) {
 		setBounds(0, 0, 230, 180);
 		setLocationRelativeTo(null);
 		setUndecorated(true);
@@ -50,27 +56,31 @@ public class forgetID extends JFrame {
 
 		tf_name = new JTextField();
 		tf_email = new JTextField();
-		
+
 		bt_confirm = new JButton("찾기");
 		bt_cancel = new JButton("취소");
-		
-		//버튼액션
+
+		// 버튼액션
 		bt_confirm.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					mDAO = new memberDAO();
-					String id = mDAO.find_id(tf_name.getText(), tf_email.getText());
-					if(id==null) {
+					PrintWriter pw = new PrintWriter(
+							new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
+					String request = "f_id::" + tf_name.getText() + "::" + tf_email.getText();
+					pw.println(request);
+					BufferedReader br = new BufferedReader(
+							new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+					String id = br.readLine();
+					if (id != null && !id.equals("")) {
+						JOptionPane.showMessageDialog(null, "회원님의 아이디는" + id + "입니다.");
+						enable_login(pane);
+					} else {
 						JOptionPane.showMessageDialog(null, "입력 정보를 다시 확인해 주세요");
-					}else {
-						JOptionPane.showMessageDialog(null, "회원님의 아이디는"+id+"입니다.");
 					}
-				} catch (SQLException e1) {
-					// TODO Auto-generated catch block
+				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
-				enable_login(pane);
 			}
 		});
 		bt_cancel.addActionListener(new ActionListener() {
@@ -79,17 +89,17 @@ public class forgetID extends JFrame {
 				enable_login(pane);
 			}
 		});
-		
-		addC(lb_title,0,0,2,1,0.2);
-		addC(lb_name,0,2,1,1,0.1);
-		addC(tf_name,1,2,1,1,0.2);
-		addC(lb_email,0,3,1,1,0.1);
-		addC(tf_email,1,3,1,1,0.2);
-		addC(bt_confirm,0,5,1,1,0.1);
-		addC(bt_cancel,1,5,1,1,0.1);
+
+		addC(lb_title, 0, 0, 2, 1, 0.2);
+		addC(lb_name, 0, 2, 1, 1, 0.1);
+		addC(tf_name, 1, 2, 1, 1, 0.2);
+		addC(lb_email, 0, 3, 1, 1, 0.1);
+		addC(tf_email, 1, 3, 1, 1, 0.2);
+		addC(bt_confirm, 0, 5, 1, 1, 0.1);
+		addC(bt_cancel, 1, 5, 1, 1, 0.1);
 		setVisible(true);
 	}
-	
+
 	private void addC(Component c, int x, int y, int w, int h, double wx) {
 		gc.weightx = wx;
 		gc.gridx = x;
@@ -99,6 +109,7 @@ public class forgetID extends JFrame {
 		layout.setConstraints(c, gc);
 		add(c);
 	}
+
 	private void enable_login(LoginWindow pane) {
 		pane.bt_login.setEnabled(true);
 		pane.bt_pwf.setEnabled(true);
