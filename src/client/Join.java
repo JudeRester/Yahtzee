@@ -7,6 +7,15 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 
 import javax.swing.JButton;
@@ -31,7 +40,7 @@ public class Join extends JFrame {
 	private GridBagLayout layout;
 	private memberDAO mDAO;
 
-	public Join(LoginWindow pane) {
+	public Join(LoginWindow pane, Socket socket) {
 		setBounds(0, 0, 300, 220);
 		setLocationRelativeTo(null);
 		setUndecorated(true);
@@ -67,7 +76,7 @@ public class Join extends JFrame {
 		bt_dupCheck.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				dupCheck();
+				dupCheck(socket);
 			}
 		});
 		bt_cancel = new JButton("취소");
@@ -90,10 +99,10 @@ public class Join extends JFrame {
 		bt_join.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				int a = join();
-				if (a == 1) {
+				String a = join(socket);
+				if (a.equals("1")) {
 					enable_login(pane);
-				}else {
+				} else {
 					JOptionPane.showMessageDialog(null, "작성내용을 확인해주세요");
 				}
 			}
@@ -120,36 +129,53 @@ public class Join extends JFrame {
 		add(c);
 	}
 
-	private void dupCheck() {
+	private void dupCheck(Socket socket) {
 		try {
-			mDAO = new memberDAO();
-			if (mDAO.dupCheck(tf_id.getText()) == 1) {
+			PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8),
+					true);
+			String request = "dupC::" + tf_id.getText();
+			pw.println(request);
+			BufferedReader br = new BufferedReader(
+					new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+
+			if (br.readLine().contentEquals("1")) {
 				JOptionPane.showMessageDialog(null, "사용중인 아이디 입니다.");
 				bt_join.setEnabled(false);
 			} else {
 				bt_join.setEnabled(true);
 				JOptionPane.showMessageDialog(null, "사용하실 수 있는 아이디 입니다.");
 			}
-		} catch (SQLException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
 	}
 
-	private int join() {
+	private String join(Socket socket) {
 		char[] pass = tf_pass.getPassword();
 		String Apass = new String(pass);
-		int isSuccess = 0;
-		User user = new User(tf_id.getText(), Apass, tf_name.getText(), tf_nickname.getText(), tf_email.getText());
+		String isSuccess = null;
+		String request = "join::" + tf_id.getText() + "::" + Apass + "::" + tf_name.getText() + "::"
+				+ tf_nickname.getText() + "::" + tf_email.getText();
+
 		try {
-			mDAO = new memberDAO();
-			isSuccess = mDAO.join(user);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+			BufferedReader br = new BufferedReader(
+					new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+			PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(),StandardCharsets.UTF_8),true);
+			pw.println(request);
+			isSuccess = br.readLine();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
+//		try {
+//			mDAO = new memberDAO();
+//			isSuccess = mDAO.join(user);
+//		} catch (SQLException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		return isSuccess;
 	}
+
 	private void enable_login(LoginWindow pane) {
 		pane.bt_login.setEnabled(true);
 		pane.bt_pwf.setEnabled(true);
