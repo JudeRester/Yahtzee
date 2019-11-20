@@ -15,13 +15,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -32,7 +31,6 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
-import Server.memberDAO;
 import common.User;
 
 public class LoginWindow extends JFrame {
@@ -46,7 +44,7 @@ public class LoginWindow extends JFrame {
 	private int x = 340, y = 400;
 
 	private Socket socket;
-	private static final String SERVER_IP = "192.168.0.8";
+	private static final String SERVER_IP = "192.168.65.1";
 	private static final int SERVER_PORT = 8888;
 	private User user;
 
@@ -161,7 +159,7 @@ public class LoginWindow extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				dis_login();
-				new forgetPass(a);
+				new forgetPass(a,socket);
 			}
 		});
 		// 패널 추가
@@ -192,6 +190,7 @@ public class LoginWindow extends JFrame {
 			if (br.readLine().contentEquals("1")) {
 				System.out.println("로그인 성공");
 				ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+				System.out.println("오브젝트 스트림 생성");
 				try {
 					user = (User) ois.readObject();
 					new RoomList(user);

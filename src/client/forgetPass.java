@@ -7,7 +7,13 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.SQLException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -17,7 +23,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 import Server.memberDAO;
-import common.User;
 
 public class forgetPass extends JFrame {
 
@@ -29,7 +34,7 @@ public class forgetPass extends JFrame {
 	private GridBagLayout layout;
 	private memberDAO mDAO;
 
-	public forgetPass(LoginWindow pane) {
+	public forgetPass(LoginWindow pane, Socket socket) {
 		setBounds(0, 0, 230, 180);
 		setLocationRelativeTo(null);
 		setUndecorated(true);
@@ -60,20 +65,37 @@ public class forgetPass extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					mDAO = new memberDAO();
-					int ex= mDAO.find_pass(tf_id.getText(),tf_email.getText());
-					if(ex==0) {
-						JOptionPane.showMessageDialog(null, "입력 정보를 다시 확인해 주세요");
+					PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(),StandardCharsets.UTF_8),true);
+					String request = "f_pass::"+tf_id.getText()+"::"+tf_email.getText();
+					pw.println(request);
+					BufferedReader br= new BufferedReader(new InputStreamReader(socket.getInputStream(),StandardCharsets.UTF_8));
+					String response = br.readLine();
+					if("1".contentEquals(response)) {
+						String newpass = JOptionPane.showInputDialog(null,"새로운 비밀번호를 입력해 주세요");
+						request = "c_pass::"+tf_id.getText()+"::"+newpass;
+						pw.println(request);
+						enable_login(pane);
 					}else {
-						String newpass=JOptionPane.showInputDialog(null, "새로운 비밀번호를 입력해주세요");
-						System.out.println(mDAO.change_pass(tf_id.getText(),newpass));
-						dispose();
+						JOptionPane.showMessageDialog(null, "입력 정보를 확인해 주세요");
 					}
-				} catch (SQLException e1) {
-					// TODO Auto-generated catch block
+				}catch(IOException e1){
 					e1.printStackTrace();
 				}
-				enable_login(pane);
+//				try {
+//					mDAO = new memberDAO();
+//					int ex= mDAO.find_pass(tf_id.getText(),tf_email.getText());
+//					if(ex==0) {
+//						JOptionPane.showMessageDialog(null, "입력 정보를 다시 확인해 주세요");
+//					}else {
+//						String newpass=JOptionPane.showInputDialog(null, "새로운 비밀번호를 입력해주세요");
+//						System.out.println(mDAO.change_pass(tf_id.getText(),newpass));
+//						dispose();
+//					}
+//				} catch (SQLException e1) {
+//					// TODO Auto-generated catch block
+//					e1.printStackTrace();
+//				}
+				
 			}
 		});
 		bt_cancel.addActionListener(new ActionListener() {

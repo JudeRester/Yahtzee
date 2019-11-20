@@ -80,7 +80,7 @@ public class RoomList extends JFrame {
 		if(win+lose==0) {
 			rates=0;
 		}else {
-			rates = (win/(win+lose))*100;
+			rates = ((double)win/(double)(win+lose))*100;
 		}
 		 
 		lb_uInfo = new JLabel("<html>"+user.getNickname()+"<br>"

@@ -19,6 +19,7 @@ public class loginThread extends Thread {
 
 	public loginThread(Socket socket) {
 		this.socket = socket;
+		System.out.println("new Thread");
 	}
 
 	@Override
@@ -43,6 +44,8 @@ public class loginThread extends Thread {
 						pw.println(result);
 						ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
 						oos.writeObject(user);
+						socket.close();
+						break;
 					} else {
 						pw.println(result);
 					}
@@ -61,6 +64,12 @@ public class loginThread extends Thread {
 				} else if("f_id".contentEquals(tokens[0])) {
 					dao = new memberDAO();
 					pw.println(dao.find_id(tokens[1], tokens[2]));
+				} else if("f_pass".contentEquals(tokens[0])) {
+					dao = new memberDAO();
+					pw.println(dao.find_pass(tokens[1], tokens[2]));
+				} else if("c_pass".contentEquals(tokens[0])) {
+					dao = new memberDAO();
+					dao.change_pass(tokens[1], tokens[2]);
 				}
 			}
 		} catch (IOException e) {

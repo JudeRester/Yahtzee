@@ -16,6 +16,7 @@ public class Server {
 			server = new ServerSocket();
 			String hostAddress = InetAddress.getLocalHost().getHostAddress();
 			server.bind(new InetSocketAddress(hostAddress, PORT));
+			System.out.println(hostAddress);
 			System.out.println("waiting...");
 			
 			while(true) {
