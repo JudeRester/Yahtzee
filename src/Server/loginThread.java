@@ -7,6 +7,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 
@@ -71,6 +72,8 @@ public class loginThread extends Thread {
 					dao.change_pass(tokens[1], tokens[2]);
 				}
 			}
+		} catch(SocketException e) {
+			System.out.println("lost connection");
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (SQLException e) {

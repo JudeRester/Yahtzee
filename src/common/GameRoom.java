@@ -1,8 +1,9 @@
 package common;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class GameRoom {
+public class GameRoom implements Serializable{
 	private int seq;
 	private String rName;
 	private ArrayList<User> users= new ArrayList<>();

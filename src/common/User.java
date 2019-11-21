@@ -8,7 +8,9 @@ import Server.Server;
 public class User implements Serializable{
 	private String id, passwd, name, nickname, email;
 	private int win, lose, high;
+	private GameRoom gr;
 	
+
 	public User() {
 	}
 
@@ -71,6 +73,11 @@ public class User implements Serializable{
 	public void setHigh(int high) {
 		this.high = high;
 	}
-	
+	public GameRoom getGr() {
+		return gr;
+	}
+	public void setGr(GameRoom gr) {
+		this.gr = gr;
+	}
 	
 }
