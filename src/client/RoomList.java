@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.net.Socket;
 import java.util.ArrayList;
 
 import javax.swing.DefaultListModel;
@@ -40,7 +41,7 @@ public class RoomList extends JFrame {
 	private ImageIcon background, titleimg;
 	private int roomcount;
 	
-	public RoomList(User user) {
+	public RoomList(User user, Socket socket) {
 		setTitle("Yahtzee 대기실");
 		setBounds(0, 0, 450, 600);
 		setLocationRelativeTo(null);
@@ -107,10 +108,10 @@ public class RoomList extends JFrame {
 		bt_create.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				roomDAO rDAO = new roomDAO();
-				GameRoom arg0=rDAO.createRoom(user, roomcount++, JOptionPane.showInputDialog(null,"방 제목을 입력해 주세요"));
-				rooms.add(arg0);
-				rm.addElement(rooms.get(rooms.size()-1).getrName());
+				roomDAO.getInstance().createRoom(user, roomcount++, JOptionPane.showInputDialog(null,"방 제목을 입력해 주세요"));
+//				GameRoom arg0=rDAO.createRoom(user, roomcount++, );
+//				rooms.add(arg0);
+//				rm.addElement(rooms.get(rooms.size()-1).getrName());
 			}
 		});
 

@@ -22,7 +22,7 @@ public class DataBaseUtil {
 		System.out.println("Driver Loaded");
 		
 		//db연결
-		dataSource.setUrl("jdbc:oracle:thin:@"+serverIP+":1522:xe");
+		dataSource.setUrl("jdbc:oracle:thin:@"+serverIP+":1521:orcl");
 		dataSource.setUsername(userName);
 		dataSource.setPassword(userPass);
 		System.out.println("DB connected");

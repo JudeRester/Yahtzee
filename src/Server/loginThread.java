@@ -3,7 +3,6 @@ package Server;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -14,12 +13,11 @@ import java.sql.SQLException;
 import common.User;
 
 public class loginThread extends Thread {
-	private Socket socket;
+	private Socket socket=null;
 	memberDAO dao;
-
+	User user;
 	public loginThread(Socket socket) {
 		this.socket = socket;
-		System.out.println("new Thread");
 	}
 
 	@Override
@@ -40,11 +38,12 @@ public class loginThread extends Thread {
 					dao = new memberDAO();
 					int result = dao.Login(tokens[1], tokens[2]);
 					if (result == 1) {
-						User user = dao.getUser(tokens[1]);
+						user = dao.getUser(tokens[1]);
 						pw.println(result);
+						System.out.println(result);
 						ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
 						oos.writeObject(user);
-						socket.close();
+						new RoomThread(socket, user).start();
 						break;
 					} else {
 						pw.println(result);

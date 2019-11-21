@@ -21,10 +21,6 @@ public class User implements Serializable{
 		this.nickname = nickname;
 		this.email = email;
 	}
-	
-	public User(Server server, Socket socket) {
-		
-	}
 
 	public String getId() {
 		return id;

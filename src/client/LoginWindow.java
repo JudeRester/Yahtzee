@@ -37,14 +37,13 @@ public class LoginWindow extends JFrame {
 	private JPanel contentPane, loginPane, idPane, passPane, buttonPane, inputPane;
 	private ImageIcon background, titleimg;
 	private JLabel title, lb_id, lb_passwd, lb_blank;
-	private JFrame join = null;
 	public JTextField tf_id;
 	public JPasswordField tf_passwd;
 	public JButton bt_login, bt_join, bt_idf, bt_pwf;
 	private int x = 340, y = 400;
 
 	private Socket socket;
-	private static final String SERVER_IP = "192.168.65.1";
+	private static final String SERVER_IP = "192.168.0.8";
 	private static final int SERVER_PORT = 8888;
 	private User user;
 
@@ -143,7 +142,7 @@ public class LoginWindow extends JFrame {
 		LoginWindow a = this;
 		bt_join.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				join = new Join(a, socket);
+				new Join(a, socket);
 				dis_login();
 			}
 		});
@@ -185,15 +184,12 @@ public class LoginWindow extends JFrame {
 			pw.println(request);
 			BufferedReader br = new BufferedReader(
 					new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-
-			System.out.println("$$$");
 			if (br.readLine().contentEquals("1")) {
 				System.out.println("로그인 성공");
 				ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-				System.out.println("오브젝트 스트림 생성");
 				try {
 					user = (User) ois.readObject();
-					new RoomList(user);
+					new RoomList(user, socket);
 					dispose();
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
