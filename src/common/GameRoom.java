@@ -7,6 +7,8 @@ public class GameRoom implements Serializable{
 	private int seq;
 	private String rName;
 	private ArrayList<User> users= new ArrayList<>();
+	private boolean isStart = false;
+	
 	
 	public GameRoom(User user, int seq, String rName) {
 		users.add(user);
@@ -36,5 +38,11 @@ public class GameRoom implements Serializable{
 	}
 	public void removeUser(User user) {
 		this.users.remove(user);
+	}
+	public boolean isStart() {
+		return isStart;
+	}
+	public void setStart(boolean isStart) {
+		this.isStart = isStart;
 	}
 }

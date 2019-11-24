@@ -30,7 +30,6 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import Server.memberDAO;
 import common.GameRoom;
 import common.User;
 
@@ -40,7 +39,6 @@ public class RoomList extends JFrame {
 	private JPanel contentPane;
 	private GridBagConstraints gc;
 	private GridBagLayout layout;
-	private memberDAO mDAO;
 	private JList<String> list;
 	private DefaultListModel<String> rm;
 	private JButton bt_create, bt_logout, bt_refresh;
@@ -190,7 +188,9 @@ public class RoomList extends JFrame {
 			rooms = (ArrayList<GameRoom>) ois.readObject();
 			rm.clear();
 			for (GameRoom r : rooms) {
-				rm.addElement(r.getrName());
+				if(!r.isStart()) {
+					rm.addElement(r.getrName());	
+				}
 			}
 
 		} catch (Exception e) {
@@ -209,8 +209,8 @@ public class RoomList extends JFrame {
 			String request = "create::"+rName;
 			pw.println(request);
 			new RoomWindow(user, socket);
+			dispose();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

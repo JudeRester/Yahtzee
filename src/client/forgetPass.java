@@ -7,13 +7,10 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -22,7 +19,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import Server.memberDAO;
+import Server.MemberDAO;
 
 public class forgetPass extends JFrame {
 
@@ -32,7 +29,7 @@ public class forgetPass extends JFrame {
 	private JButton bt_confirm, bt_cancel;
 	private GridBagConstraints gc;
 	private GridBagLayout layout;
-	private memberDAO mDAO;
+	private MemberDAO mDAO;
 
 	public forgetPass(LoginWindow pane, Socket socket) {
 		setBounds(0, 0, 230, 180);
@@ -65,20 +62,24 @@ public class forgetPass extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(),StandardCharsets.UTF_8),true);
+					ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+					ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+//					PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(),StandardCharsets.UTF_8),true);
 					String request = "f_pass::"+tf_id.getText()+"::"+tf_email.getText();
-					pw.println(request);
-					BufferedReader br= new BufferedReader(new InputStreamReader(socket.getInputStream(),StandardCharsets.UTF_8));
-					String response = br.readLine();
-					if("1".contentEquals(response)) {
+					oos.writeObject(request);
+//					BufferedReader br= new BufferedReader(new InputStreamReader(socket.getInputStream(),StandardCharsets.UTF_8));
+					int response = ((int)ois.readObject());
+					if(response==1) {
 						String newpass = JOptionPane.showInputDialog(null,"새로운 비밀번호를 입력해 주세요");
 						request = "c_pass::"+tf_id.getText()+"::"+newpass;
-						pw.println(request);
+						oos.writeObject(request);
 						enable_login(pane);
 					}else {
 						JOptionPane.showMessageDialog(null, "입력 정보를 확인해 주세요");
 					}
 				}catch(IOException e1){
+					e1.printStackTrace();
+				}catch(ClassNotFoundException e1) {
 					e1.printStackTrace();
 				}
 //				try {

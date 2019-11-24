@@ -24,7 +24,7 @@ public class Server {
 			while(true) {
 				Socket socket = server.accept();
 				System.out.println("connected");
-				new loginThread(socket).start();
+				new LoginThread(socket).start();
 			}
 		}catch(IOException e) {
 			e.printStackTrace();

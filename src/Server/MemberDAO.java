@@ -1,5 +1,6 @@
 package Server;
 
+import java.net.Socket;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -7,12 +8,12 @@ import java.sql.SQLException;
 
 import common.User;
 
-public class memberDAO {
+public class MemberDAO {
 	Connection conn;
 	PreparedStatement pstmt;
 	ResultSet rs=null;
 	
-	public memberDAO() throws SQLException{
+	public MemberDAO() throws SQLException{
 		conn=DataBaseUtil.getConnection();
 	}
 	//로그인
@@ -137,7 +138,7 @@ public class memberDAO {
 	}
 	
 	//회원 정보 받아오기
-	public User getUser(String id) {
+	public User getUser(String id,Socket socket) {
 		User user=null;
 		StringBuffer sql = new StringBuffer();
 		sql.append("select * from member where id=?");
@@ -153,6 +154,7 @@ public class memberDAO {
 				user.setLose(rs.getInt("lose"));
 				user.setHigh(rs.getInt("high"));
 			}
+			user.setSocket(socket);
 		}catch(SQLException e){
 			e.printStackTrace();
 		}finally {

@@ -17,8 +17,8 @@ public class RoomThread extends Thread {
 	private Socket socket;
 	private User user;
 
-	public RoomThread(Socket socket, User user) {
-		this.socket = socket;
+	public RoomThread(User user) {
+		this.socket = user.getSocket();
 		this.user = user;
 	}
 
@@ -28,7 +28,7 @@ public class RoomThread extends Thread {
 
 			BufferedReader br;
 			PrintWriter pw;
-			roomDAO dao = roomDAO.getInstance();
+			RoomDAO dao = RoomDAO.getInstance();
 			while (true) {
 				System.out.println("listen...");
 				br = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
@@ -43,7 +43,7 @@ public class RoomThread extends Thread {
 					oos.writeObject(rl);
 					System.out.println("loading room list");
 				} else if ("create".contentEquals(tokens[0])) {
-					user.setGr(dao.createRoom(user, tokens[1])); 
+					user.setGr(dao.createRoom(user, tokens[1]));
 					System.out.println("room has been created");
 					System.out.println("number of rooms : " + dao.getRoomlist().size());
 					break;
@@ -53,6 +53,8 @@ public class RoomThread extends Thread {
 						for (GameRoom gr : dao.getRoomlist()) {
 							if (gr.getSeq() == Integer.parseInt(tokens[1])) {
 								user.setGr(gr);
+								if (gr.getUsers().size() > 1)
+									gr.setStart(true);
 							}
 							pw.println(result);
 							break;

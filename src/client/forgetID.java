@@ -7,13 +7,10 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -22,7 +19,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
-import Server.memberDAO;
+import Server.MemberDAO;
 
 public class forgetID extends JFrame {
 
@@ -32,7 +29,7 @@ public class forgetID extends JFrame {
 	private JButton bt_confirm, bt_cancel;
 	private GridBagConstraints gc;
 	private GridBagLayout layout;
-	private memberDAO mDAO;
+	private MemberDAO mDAO;
 
 	public forgetID(LoginWindow pane, Socket socket) {
 		setBounds(0, 0, 230, 180);
@@ -65,13 +62,15 @@ public class forgetID extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					PrintWriter pw = new PrintWriter(
-							new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
+					ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+					ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+//					PrintWriter pw = new PrintWriter(
+//							new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
 					String request = "f_id::" + tf_name.getText() + "::" + tf_email.getText();
-					pw.println(request);
-					BufferedReader br = new BufferedReader(
-							new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-					String id = br.readLine();
+					oos.writeObject(request);
+//					BufferedReader br = new BufferedReader(
+//							new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+					String id = ((String)ois.readObject());
 					if (id != null && !id.equals("")) {
 						JOptionPane.showMessageDialog(null, "회원님의 아이디는" + id + "입니다.");
 						enable_login(pane);
@@ -79,6 +78,8 @@ public class forgetID extends JFrame {
 						JOptionPane.showMessageDialog(null, "입력 정보를 다시 확인해 주세요");
 					}
 				} catch (IOException e1) {
+					e1.printStackTrace();
+				} catch(ClassNotFoundException e1) {					
 					e1.printStackTrace();
 				}
 			}

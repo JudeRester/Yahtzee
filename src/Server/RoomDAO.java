@@ -5,17 +5,17 @@ import java.util.ArrayList;
 import common.GameRoom;
 import common.User;
 
-public class roomDAO {
+public class RoomDAO {
 	private ArrayList<GameRoom> roomList = new ArrayList<>();
 	private int seq = 0;
-	private roomDAO() {
+	private RoomDAO() {
 	}
 
 	private static class Room {
-		public static final roomDAO instance = new roomDAO();
+		public static final RoomDAO instance = new RoomDAO();
 	}
 
-	public static roomDAO getInstance() {
+	public static RoomDAO getInstance() {
 		return Room.instance;
 	}
 

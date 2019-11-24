@@ -11,8 +11,11 @@ import common.User;
 public class RoomWindow extends JFrame {
 	private JPanel contentPane;
 	private JLabel me;
+	private User user;
+	private Socket socket;
 	public RoomWindow(User user, Socket socket) {
-		
+		this.user = user;
+		this.socket = socket;
 		setTitle("Yahtzee");
 		setBounds(0,0,450,600);
 		setLocationRelativeTo(null);
@@ -22,6 +25,7 @@ public class RoomWindow extends JFrame {
 		setContentPane(contentPane);
 		me = new JLabel(user.getNickname());
 		add(me);
+		setVisible(true);
 	}
 	
 }

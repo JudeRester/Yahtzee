@@ -9,11 +9,10 @@ public class User implements Serializable{
 	private String id, passwd, name, nickname, email;
 	private int win, lose, high;
 	private GameRoom gr;
-	
+	private Socket socket;
 
 	public User() {
 	}
-
 	//회원가입
 	public User(String id, String passwd, String name, String nickname, String email) {
 		super();
@@ -79,5 +78,12 @@ public class User implements Serializable{
 	public void setGr(GameRoom gr) {
 		this.gr = gr;
 	}
-	
+	public Socket getSocket() {
+		return socket;
+	}
+
+	public void setSocket(Socket socket) {
+		this.socket = socket;
+	}
+
 }

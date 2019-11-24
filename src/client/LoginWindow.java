@@ -15,6 +15,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.InetAddress;
@@ -47,11 +48,17 @@ public class LoginWindow extends JFrame {
 	private static final int SERVER_PORT = 8888;
 	private User user;
 
+	ObjectOutputStream oos;
+	ObjectInputStream ois;
 	public LoginWindow() {
 		try {
+
 			socket = new Socket();
 			socket.connect(new InetSocketAddress(SERVER_IP, SERVER_PORT));
+			oos = new ObjectOutputStream(socket.getOutputStream());
+			ois = new ObjectInputStream(socket.getInputStream());
 			System.out.println("connected successfully");
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -178,15 +185,16 @@ public class LoginWindow extends JFrame {
 
 	private void login() {
 		try {
-			PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8),true);
+//			PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8),true);
+			
 			char[] pass = tf_passwd.getPassword();
 			String request = "login::" + tf_id.getText() + "::" + new String(pass, 0, pass.length);
-			pw.println(request);
-			BufferedReader br = new BufferedReader(
-					new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-			if (br.readLine().contentEquals("1")) {
+			oos.writeObject(request);
+//			BufferedReader br = new BufferedReader(
+//					new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+			int result =(int)ois.readObject();
+			if (result==1) {
 				System.out.println("로그인 성공");
-				ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
 				try {
 					user = (User) ois.readObject();
 					new RoomList(user, socket);
@@ -198,6 +206,8 @@ public class LoginWindow extends JFrame {
 				JOptionPane.showMessageDialog(null, "아이디와 비밀번호를 확인해주세요");
 			}
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch(ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 	}

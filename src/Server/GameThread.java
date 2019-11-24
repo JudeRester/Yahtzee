@@ -13,7 +13,7 @@ import common.User;
 
 public class GameThread extends Thread {
 	private Socket socket = null;
-	private roomDAO dao;
+	private RoomDAO dao;
 	private User user;
 	private GameRoom gr;
 	public GameThread (Socket socket, User user){

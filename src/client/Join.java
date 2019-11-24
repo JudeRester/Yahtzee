@@ -26,7 +26,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
-import Server.memberDAO;
+import Server.MemberDAO;
 import common.User;
 
 public class Join extends JFrame {
@@ -38,7 +38,7 @@ public class Join extends JFrame {
 	private JButton bt_dupCheck, bt_join, bt_cancel;
 	private GridBagConstraints gc;
 	private GridBagLayout layout;
-	private memberDAO mDAO;
+	private MemberDAO mDAO;
 
 	public Join(LoginWindow pane, Socket socket) {
 		setBounds(0, 0, 300, 220);
@@ -99,8 +99,8 @@ public class Join extends JFrame {
 		bt_join.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String a = join(socket);
-				if (a.equals("1")) {
+				int a = join(socket);
+				if (a==1) {
 					enable_login(pane);
 				} else {
 					JOptionPane.showMessageDialog(null, "작성내용을 확인해주세요");
@@ -131,14 +131,16 @@ public class Join extends JFrame {
 
 	private void dupCheck(Socket socket) {
 		try {
-			PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8),
-					true);
+//			PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8),
+//					true);
+			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+			ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
 			String request = "dupC::" + tf_id.getText();
-			pw.println(request);
-			BufferedReader br = new BufferedReader(
-					new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+			oos.writeUTF(request);
+//			BufferedReader br = new BufferedReader(
+//					new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
 
-			if (br.readLine().contentEquals("1")) {
+			if (((int)ois.readObject())==1) {
 				JOptionPane.showMessageDialog(null, "사용중인 아이디 입니다.");
 				bt_join.setEnabled(false);
 			} else {
@@ -147,23 +149,29 @@ public class Join extends JFrame {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		}
 	}
 
-	private String join(Socket socket) {
+	private int join(Socket socket) {
 		char[] pass = tf_pass.getPassword();
 		String Apass = new String(pass);
-		String isSuccess = null;
+		int isSuccess = 0;
 		String request = "join::" + tf_id.getText() + "::" + Apass + "::" + tf_name.getText() + "::"
 				+ tf_nickname.getText() + "::" + tf_email.getText();
 
 		try {
-			BufferedReader br = new BufferedReader(
-					new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-			PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(),StandardCharsets.UTF_8),true);
-			pw.println(request);
-			isSuccess = br.readLine();
+//			BufferedReader br = new BufferedReader(
+//					new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+//			PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(),StandardCharsets.UTF_8),true);
+			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
+			ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+			oos.writeObject(request);
+			isSuccess = ((int)ois.readObject());
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
 		return isSuccess;
