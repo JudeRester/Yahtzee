@@ -11,14 +11,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
 import javax.swing.DefaultListModel;
@@ -45,7 +41,16 @@ public class RoomList extends JFrame {
 	private ImageIcon background, titleimg;
 	private Socket socket;
 	private User user;
+	private ObjectOutputStream oos;
+	private ObjectInputStream ois;
+
 	public RoomList(User user, Socket socket) {
+		try {
+			oos = new ObjectOutputStream(socket.getOutputStream());
+			ois = new ObjectInputStream(socket.getInputStream());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		this.socket = socket;
 		this.user = user;
 		setTitle("Yahtzee 대기실");
@@ -111,9 +116,6 @@ public class RoomList extends JFrame {
 				String rName = JOptionPane.showInputDialog(null, "방 제목을 입력해 주세요");
 				createRoom(rName);
 				System.out.println("방 만듬");
-//				GameRoom arg0=rDAO.createRoom(user, roomcount++, );
-//				rooms.add(arg0);
-//				rm.addElement(rooms.get(rooms.size()-1).getrName());
 			}
 		});
 		// 새로고침
@@ -124,7 +126,7 @@ public class RoomList extends JFrame {
 				refresh();
 			}
 		});
-		
+		// 방 입장
 		list.addMouseListener(new MouseListener() {
 
 			@Override
@@ -161,7 +163,7 @@ public class RoomList extends JFrame {
 		addC(sc, 0, 1, 1, 4, 0.2);
 		addC(lb_uInfo, 1, 4, 1, 1, 0.2);
 		addC(bt_create, 1, 1, 1, 1, 0.1);
-		addC(bt_refresh, 1,2,1,1,0.2);
+		addC(bt_refresh, 1, 2, 1, 1, 0.2);
 		setVisible(true);
 
 	}
@@ -178,61 +180,53 @@ public class RoomList extends JFrame {
 
 	private void refresh() {
 		try {
-			PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8),
-					true);
-			BufferedReader br = new BufferedReader(
-					new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
 			String request = "getlist::";
-			pw.println(request);
-			ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+			oos.writeObject(request);
 			rooms = (ArrayList<GameRoom>) ois.readObject();
 			rm.clear();
 			for (GameRoom r : rooms) {
-				if(!r.isStart()) {
-					rm.addElement(r.getrName());	
-				}
+				rm.addElement(r.getrName());
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println("number of rooms : "+rooms.size());
-		for(GameRoom r: rooms) {
+		System.out.println("number of rooms : " + rooms.size());
+		for (GameRoom r : rooms) {
 			System.out.println(r.getrName());
 		}
 	}
 
 	private void createRoom(String rName) {
 		try {
-			PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8),
-					true);
-			String request = "create::"+rName;
-			pw.println(request);
+			String request = "create::" + rName;
+			oos.writeObject(request);
 			new RoomWindow(user, socket);
 			dispose();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
+
 	private void enterRoom(int seq) {
-		int result =0;
+		int result = 0;
 		try {
-			PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
-			String request = "enter::"+seq;
-			pw.println(request);
-			BufferedReader br = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-			result = Integer.parseInt(br.readLine());
+			String request = "enter::" + seq;
+			oos.writeObject(request);
+			result = (Integer) ois.readObject();
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 		}
-		//result 0-성공/1-꽉참/2-방없음
-		if(result==0) {
+		// result 0-성공/1-꽉참/2-방없음
+		if (result == 0) {
 			new RoomWindow(user, socket);
 			dispose();
-		}else if(result ==1) {
+		} else if (result == 1) {
 			JOptionPane.showMessageDialog(null, "방이 꽉 찼습니다.");
 			refresh();
-		}else {
+		} else {
 			JOptionPane.showMessageDialog(null, "방이 존재하지 않습니다");
 			refresh();
 		}

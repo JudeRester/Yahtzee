@@ -30,6 +30,7 @@ public class LoginThread extends Thread {
 //			BufferedReader br;
 //			PrintWriter pw;
 			while (true) {
+				
 //				br = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
 //				pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
 				String request = (String)ois.readObject();
@@ -42,10 +43,10 @@ public class LoginThread extends Thread {
 					dao = new MemberDAO();
 					int result = dao.Login(tokens[1], tokens[2]);
 					if (result == 1) {
-						user = dao.getUser(tokens[1], socket);
+						user = dao.getUser(tokens[1]);
 						oos.writeObject(result);
 						oos.writeObject(user);
-						new RoomThread(user).start();
+						new RoomThread(user,socket).start();
 						break;
 					} else {
 						oos.writeObject(result);

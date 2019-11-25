@@ -149,7 +149,7 @@ public class LoginWindow extends JFrame {
 		LoginWindow a = this;
 		bt_join.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				new Join(a, socket);
+				new Join(a, socket,oos,ois);
 				dis_login();
 			}
 		});
@@ -157,7 +157,7 @@ public class LoginWindow extends JFrame {
 		bt_idf.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				dis_login();
-				new forgetID(a, socket);
+				new forgetID(a, socket,oos,ois);
 			}
 		});
 
@@ -165,7 +165,7 @@ public class LoginWindow extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				dis_login();
-				new forgetPass(a,socket);
+				new forgetPass(a,socket,oos,ois);
 			}
 		});
 		// 패널 추가

@@ -138,7 +138,7 @@ public class MemberDAO {
 	}
 	
 	//회원 정보 받아오기
-	public User getUser(String id,Socket socket) {
+	public User getUser(String id) {
 		User user=null;
 		StringBuffer sql = new StringBuffer();
 		sql.append("select * from member where id=?");
@@ -154,7 +154,6 @@ public class MemberDAO {
 				user.setLose(rs.getInt("lose"));
 				user.setHigh(rs.getInt("high"));
 			}
-			user.setSocket(socket);
 		}catch(SQLException e){
 			e.printStackTrace();
 		}finally {

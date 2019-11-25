@@ -29,9 +29,11 @@ public class forgetID extends JFrame {
 	private JButton bt_confirm, bt_cancel;
 	private GridBagConstraints gc;
 	private GridBagLayout layout;
-	private MemberDAO mDAO;
-
-	public forgetID(LoginWindow pane, Socket socket) {
+	ObjectOutputStream oos;
+	ObjectInputStream ois;
+	public forgetID(LoginWindow pane, Socket socket, ObjectOutputStream oos, ObjectInputStream ois) {
+		this.oos = oos;
+		this.ois = ois;
 		setBounds(0, 0, 230, 180);
 		setLocationRelativeTo(null);
 		setUndecorated(true);
@@ -62,14 +64,9 @@ public class forgetID extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-					ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-//					PrintWriter pw = new PrintWriter(
-//							new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
+					
 					String request = "f_id::" + tf_name.getText() + "::" + tf_email.getText();
 					oos.writeObject(request);
-//					BufferedReader br = new BufferedReader(
-//							new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
 					String id = ((String)ois.readObject());
 					if (id != null && !id.equals("")) {
 						JOptionPane.showMessageDialog(null, "회원님의 아이디는" + id + "입니다.");

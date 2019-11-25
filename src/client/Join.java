@@ -38,9 +38,12 @@ public class Join extends JFrame {
 	private JButton bt_dupCheck, bt_join, bt_cancel;
 	private GridBagConstraints gc;
 	private GridBagLayout layout;
-	private MemberDAO mDAO;
+	ObjectOutputStream oos;
+	ObjectInputStream ois;
 
-	public Join(LoginWindow pane, Socket socket) {
+	public Join(LoginWindow pane, Socket socket, ObjectOutputStream oos, ObjectInputStream ois) {
+		this.oos = oos;
+		this.ois = ois;
 		setBounds(0, 0, 300, 220);
 		setLocationRelativeTo(null);
 		setUndecorated(true);
@@ -100,7 +103,7 @@ public class Join extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				int a = join(socket);
-				if (a==1) {
+				if (a == 1) {
 					enable_login(pane);
 				} else {
 					JOptionPane.showMessageDialog(null, "작성내용을 확인해주세요");
@@ -131,16 +134,10 @@ public class Join extends JFrame {
 
 	private void dupCheck(Socket socket) {
 		try {
-//			PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8),
-//					true);
-			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-			ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
 			String request = "dupC::" + tf_id.getText();
-			oos.writeUTF(request);
-//			BufferedReader br = new BufferedReader(
-//					new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+			oos.writeObject(request);
 
-			if (((int)ois.readObject())==1) {
+			if (((int) ois.readObject()) == 1) {
 				JOptionPane.showMessageDialog(null, "사용중인 아이디 입니다.");
 				bt_join.setEnabled(false);
 			} else {
@@ -162,13 +159,8 @@ public class Join extends JFrame {
 				+ tf_nickname.getText() + "::" + tf_email.getText();
 
 		try {
-//			BufferedReader br = new BufferedReader(
-//					new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
-//			PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(),StandardCharsets.UTF_8),true);
-			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-			ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
 			oos.writeObject(request);
-			isSuccess = ((int)ois.readObject());
+			isSuccess = ((int) ois.readObject());
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {

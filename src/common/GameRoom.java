@@ -11,9 +11,8 @@ public class GameRoom implements Serializable{
 	private String rName;
 	private ArrayList<User> users= new ArrayList<>();
 	private boolean isStart = false;
-	private Map<String, int[]> m = Collections.synchronizedMap(new HashMap<String, int[]>());
-
-
+	private Map<String, int[]> score = Collections.synchronizedMap(new HashMap<String, int[]>());
+	private int turn;
 	
 	public GameRoom(User user, int seq, String rName) {
 		users.add(user);
@@ -21,8 +20,9 @@ public class GameRoom implements Serializable{
 		this.rName=rName;
 	}
 	public void gameStart() {
-		m.put(users.get(1).getId(), new int[13]);
-		m.put(users.get(2).getId(), new int[13]);
+		turn =0;
+		score.put(users.get(0).getId(), new int[13]);
+		score.put(users.get(1).getId(), new int[13]);
 	}
 	public int getSeq() {
 		return seq;
@@ -53,5 +53,17 @@ public class GameRoom implements Serializable{
 	}
 	public void setStart(boolean isStart) {
 		this.isStart = isStart;
+	}
+	public Map<String, int[]> getScore() {
+		return score;
+	}
+	public void setScore(Map<String, int[]> score) {
+		this.score = score;
+	}
+	public int getTurn() {
+		return turn;
+	}
+	public void setTurn(int turn) {
+		this.turn = turn;
 	}
 }

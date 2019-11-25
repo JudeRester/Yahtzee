@@ -29,9 +29,12 @@ public class forgetPass extends JFrame {
 	private JButton bt_confirm, bt_cancel;
 	private GridBagConstraints gc;
 	private GridBagLayout layout;
-	private MemberDAO mDAO;
+	ObjectOutputStream oos;
+	ObjectInputStream ois;
 
-	public forgetPass(LoginWindow pane, Socket socket) {
+	public forgetPass(LoginWindow pane, Socket socket, ObjectOutputStream oos, ObjectInputStream ois) {
+		this.oos = oos;
+		this.ois = ois;
 		setBounds(0, 0, 230, 180);
 		setLocationRelativeTo(null);
 		setUndecorated(true);
@@ -53,50 +56,32 @@ public class forgetPass extends JFrame {
 
 		tf_id = new JTextField();
 		tf_email = new JTextField();
-		
+
 		bt_confirm = new JButton("찾기");
 		bt_cancel = new JButton("취소");
-		
-		//버튼액션
+
+		// 버튼액션
 		bt_confirm.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				try {
-					ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
-					ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
-//					PrintWriter pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(),StandardCharsets.UTF_8),true);
-					String request = "f_pass::"+tf_id.getText()+"::"+tf_email.getText();
+					String request = "f_pass::" + tf_id.getText() + "::" + tf_email.getText();
 					oos.writeObject(request);
-//					BufferedReader br= new BufferedReader(new InputStreamReader(socket.getInputStream(),StandardCharsets.UTF_8));
-					int response = ((int)ois.readObject());
-					if(response==1) {
-						String newpass = JOptionPane.showInputDialog(null,"새로운 비밀번호를 입력해 주세요");
-						request = "c_pass::"+tf_id.getText()+"::"+newpass;
+					int response = ((int) ois.readObject());
+					if (response == 1) {
+						String newpass = JOptionPane.showInputDialog(null, "새로운 비밀번호를 입력해 주세요");
+						request = "c_pass::" + tf_id.getText() + "::" + newpass;
 						oos.writeObject(request);
 						enable_login(pane);
-					}else {
+					} else {
 						JOptionPane.showMessageDialog(null, "입력 정보를 확인해 주세요");
 					}
-				}catch(IOException e1){
+				} catch (IOException e1) {
 					e1.printStackTrace();
-				}catch(ClassNotFoundException e1) {
+				} catch (ClassNotFoundException e1) {
 					e1.printStackTrace();
 				}
-//				try {
-//					mDAO = new memberDAO();
-//					int ex= mDAO.find_pass(tf_id.getText(),tf_email.getText());
-//					if(ex==0) {
-//						JOptionPane.showMessageDialog(null, "입력 정보를 다시 확인해 주세요");
-//					}else {
-//						String newpass=JOptionPane.showInputDialog(null, "새로운 비밀번호를 입력해주세요");
-//						System.out.println(mDAO.change_pass(tf_id.getText(),newpass));
-//						dispose();
-//					}
-//				} catch (SQLException e1) {
-//					// TODO Auto-generated catch block
-//					e1.printStackTrace();
-//				}
-				
+
 			}
 		});
 		bt_cancel.addActionListener(new ActionListener() {
@@ -105,17 +90,17 @@ public class forgetPass extends JFrame {
 				enable_login(pane);
 			}
 		});
-		
-		addC(lb_title,0,0,2,1,0.2);
-		addC(lb_id,0,2,1,1,0.1);
-		addC(tf_id,1,2,1,1,0.2);
-		addC(lb_email,0,3,1,1,0.1);
-		addC(tf_email,1,3,1,1,0.2);
-		addC(bt_confirm,0,5,1,1,0.1);
-		addC(bt_cancel,1,5,1,1,0.1);
+
+		addC(lb_title, 0, 0, 2, 1, 0.2);
+		addC(lb_id, 0, 2, 1, 1, 0.1);
+		addC(tf_id, 1, 2, 1, 1, 0.2);
+		addC(lb_email, 0, 3, 1, 1, 0.1);
+		addC(tf_email, 1, 3, 1, 1, 0.2);
+		addC(bt_confirm, 0, 5, 1, 1, 0.1);
+		addC(bt_cancel, 1, 5, 1, 1, 0.1);
 		setVisible(true);
 	}
-	
+
 	private void addC(Component c, int x, int y, int w, int h, double wx) {
 		gc.weightx = wx;
 		gc.gridx = x;
@@ -125,6 +110,7 @@ public class forgetPass extends JFrame {
 		layout.setConstraints(c, gc);
 		add(c);
 	}
+
 	private void enable_login(LoginWindow pane) {
 		pane.bt_login.setEnabled(true);
 		pane.bt_pwf.setEnabled(true);
