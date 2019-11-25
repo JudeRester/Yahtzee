@@ -15,7 +15,8 @@ public class GameThread extends Thread {
 	private RoomDAO dao;
 	private User user;
 	private GameRoom gr;
-	private int[] rolled= new int[5];
+	private int[] rolled = new int[5];
+
 	public GameThread(Socket socket, User user) {
 		this.socket = socket;
 		this.user = user;
@@ -28,47 +29,51 @@ public class GameThread extends Thread {
 		try {
 			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
 			ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
+			for (GameRoom r : dao.getRoomlist()) {
+				if (r.getSeq() == gr.getSeq()) {
+					dao.putUser(r, oos);
+				}
+			}
 			while (true) {
 				String request = (String) ois.readObject();
 				String[] tokens = request.split("::");
 				System.out.println(request);
 				if ("isStart".contentEquals(tokens[0])) {
-					boolean a =true;
+					boolean a = true;
 					while (a) {
 						if (isStart()) {
-							gr.gameStart();
-							for (User u : gr.getUsers()) {
-								if (u != user) {
-									oos.writeObject(u.getNickname());
-									a=false;
-									break;
-								}
-							}
+							String user1=gr.getUsers().get(0).getNickname();
+							String user2=gr.getUsers().get(1).getNickname();
+							dao.broadcast(gr, "start::"+user1+"::"+user2);
+							a = false;
+							break;
 						}
 					}
-				}else if ("isMyturn".contentEquals(tokens[0])) {
-					while(gr.getTurn()==gr.getUsers().indexOf(user)) {
-						
+				} else if ("isMyturn".contentEquals(tokens[0])) {
+					while (gr.getTurn() == gr.getUsers().indexOf(user)) {
+
 					}
-				}else if("roll".contentEquals(tokens[0])) {
-					for(int i=0;i<rolled.length;i++) {
-						rolled[i]= new Random().nextInt(6);
+				} else if ("roll".contentEquals(tokens[0])) {
+					StringBuffer response = new StringBuffer("rolled");
+					for (int i = 0; i < rolled.length; i++) {
+						response.append("::"+new Random().nextInt(6));
 					}
-					oos.writeObject(rolled);
-				}else if("turnEnd".contentEquals(tokens[0])) {
+					dao.broadcast(gr, response.toString());
+				} else if ("turnEnd".contentEquals(tokens[0])) {
 					int turn = gr.getTurn();
-					if(turn ==0) {
+					if (turn == 0) {
 						gr.setTurn(1);
-					}else {
+					} else {
 						gr.setTurn(0);
 					}
 				}
 				oos.reset();
 			}
-		} catch (SocketException e) {
+		} catch (
+
+		SocketException e) {
 			System.out.println("[GameThread]lost connection");
 			dao.getRoomlist().get(gr.getSeq()).removeUser(user);
-			gr = dao.getRoomlist().get(gr.getSeq());
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
@@ -77,9 +82,9 @@ public class GameThread extends Thread {
 	}
 
 	public boolean isStart() {
-		for(GameRoom r:dao.getRoomlist()) {
-			if(r.getSeq() == gr.getSeq()) {
-				gr=r;
+		for (GameRoom r : dao.getRoomlist()) {
+			if (r.getSeq() == gr.getSeq()) {
+				gr = r;
 			}
 		}
 		return gr.isStart();

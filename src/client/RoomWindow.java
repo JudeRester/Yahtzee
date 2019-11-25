@@ -39,8 +39,8 @@ public class RoomWindow extends JFrame {
 	private ObjectInputStream ois;
 	private int[][] myroll = new int[2][5];
 	private int[] newroll = new int[5];
-	private int rollcount=0;
-	
+	private int rollcount = 0;
+
 	public RoomWindow(User user, Socket socket) {
 		this.user = user;
 		this.socket = socket;
@@ -50,7 +50,7 @@ public class RoomWindow extends JFrame {
 		} catch (IOException e2) {
 			e2.printStackTrace();
 		}
-		
+
 		setTitle("Yahtzee");
 		setBounds(0, 0, 455, 845);
 		setLocationRelativeTo(null);
@@ -73,22 +73,37 @@ public class RoomWindow extends JFrame {
 
 		JLabel back = new JLabel(new ImageIcon("img/gameboard_1.png"));
 		back.setBounds(0, 25, 455, 711);
-		
-		//점수버튼 액션
+
+		// 점수버튼 액션
 		ActionListener b_action = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JButton clicked = (JButton)e.getSource();
-				clicked.setText("0");
-				clicked.setEnabled(false);
-				try {
-					oos.writeObject("turnEnd::");
-					roll.setEnabled(false);
-				} catch (IOException e1) {
-					e1.printStackTrace();
+				JButton clicked = (JButton) e.getSource();
+				if (e.getSource().equals(one)) {
+					clicked.setText("1");
+				} else if (e.getSource().equals(two)) {
+					clicked.setText("2");
+				} else if (e.getSource().equals(three)) {
+					clicked.setText("3");
+				} else if (e.getSource().equals(four)) {
+					clicked.setText("4");
+				} else if (e.getSource().equals(five)) {
+					clicked.setText("5");
+				} else {
+					System.out.println("dmdk");
 				}
+
+				clicked.setEnabled(false);
+
+//				try {
+//					oos.writeObject("turnEnd::");
+//					roll.setEnabled(false);
+//				} catch (IOException e1) {
+//					e1.printStackTrace();
+//				}
 			}
 		};
+
 		// 내 점수 버튼 및 상대 점수 라벨
 		for (int i = 0; i < buttons.length; i++) {
 			buttons[i] = new JButton();
@@ -122,23 +137,15 @@ public class RoomWindow extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				rollcount++;
-				if(rollcount>=2) {
+				if (rollcount >= 2) {
 					roll.setEnabled(false);
 				}
 				try {
 					oos.writeObject("roll::");
-					newroll = (int[])ois.readObject();
-					for(int i=0;i<newroll.length;i++) {
-						if(myroll[1][i]==0) {
-							myroll[0][i]=newroll[i];
-							dices[i].setIcon(diceImages[myroll[0][i]]);
-						}
-					}
+					oos.reset();
 				} catch (IOException e1) {
 					e1.printStackTrace();
-				} catch (ClassNotFoundException e1) {
-					e1.printStackTrace();
-				}
+				} 
 			}
 		});
 		add(me);
@@ -148,32 +155,40 @@ public class RoomWindow extends JFrame {
 		add(back);
 		add(roll);
 		setVisible(true);
-		
-//		new Thread() {
-//			public void run() {
-//				try {
-//					String request = "";
-//					String request = "isStart::";
-//					oos.writeObject(request);
-//					String oppo_nick = (String)ois.readObject();
-//					opponent.setText(oppo_nick);
-//					opponent2.setText(oppo_nick);
-//					while(true) {
-//						request = "isMyturn::";
-//						oos.writeObject(request);
-//						String response = (String) ois.readObject();
-//						String[] tokens = request.split("::");
-//						if("turn".contentEquals(tokens[0])) {
-//							
-//						}
-//					}
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//				} catch(ClassNotFoundException e) {
-//					e.printStackTrace();
-//				}
-//			}
-//		}.start();
+		new Thread() {
+			public void run() {
+				try {
+					String request = "isStart::";
+					oos.writeObject(request);
+					oos.reset();
+					while(true) {
+						String response = (String) ois.readObject();
+						String[] tokens = response.split("::");
+						if("start".contentEquals(tokens[0])) {
+							System.out.println("start!");
+							if(user.getNickname().contentEquals(tokens[1])) {
+								opponent.setText(tokens[2]);
+								opponent2.setText(tokens[2]);
+							}else {
+								opponent.setText(tokens[1]);
+								opponent2.setText(tokens[1]);
+							}
+						}else if("rolled".contentEquals(tokens[0])) {
+							for (int i = 1; i <= newroll.length; i++) {
+								if (myroll[1][i-1] == 0) {
+									myroll[0][i-1] = Integer.parseInt(tokens[i]);
+									dices[i-1].setIcon(diceImages[myroll[0][i-1]]);
+								}
+							}
+						}
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				} catch(ClassNotFoundException e) {
+					e.printStackTrace();
+				}
+			}
+		}.start();
 	}
 
 }

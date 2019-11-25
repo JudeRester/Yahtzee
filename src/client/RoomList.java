@@ -182,7 +182,8 @@ public class RoomList extends JFrame {
 		try {
 			String request = "getlist::";
 			oos.writeObject(request);
-			rooms = (ArrayList<GameRoom>) ois.readObject();
+			rooms = null;
+			rooms = (ArrayList<GameRoom>) ois.readUnshared();
 			rm.clear();
 			for (GameRoom r : rooms) {
 				rm.addElement(r.getrName());
@@ -201,6 +202,7 @@ public class RoomList extends JFrame {
 		try {
 			String request = "create::" + rName;
 			oos.writeObject(request);
+			oos.flush();
 			new RoomWindow(user, socket);
 			dispose();
 		} catch (IOException e) {

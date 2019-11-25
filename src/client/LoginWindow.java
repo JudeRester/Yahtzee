@@ -44,7 +44,7 @@ public class LoginWindow extends JFrame {
 	private int x = 340, y = 400;
 
 	private Socket socket;
-	private static final String SERVER_IP = "192.168.0.8";
+	private static final String SERVER_IP = "192.168.65.1";
 	private static final int SERVER_PORT = 8888;
 	private User user;
 

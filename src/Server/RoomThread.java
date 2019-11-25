@@ -33,8 +33,8 @@ public class RoomThread extends Thread {
 				if ("getlist".contentEquals(tokens[0])) {
 					ArrayList<GameRoom> rl = dao.getaRoomList();
 					System.out.println(request);
-					oos.writeObject(rl);
-					System.out.println("loading room list");
+					oos.writeUnshared(rl);
+					System.out.println("loading room list" +rl.size());
 				} else if ("create".contentEquals(tokens[0])) {
 					user.setGr(dao.createRoom(user, tokens[1], socket));
 					System.out.println("room has been created");
@@ -47,8 +47,10 @@ public class RoomThread extends Thread {
 						for (GameRoom gr : dao.getRoomlist()) {
 							if (gr.getSeq() == Integer.parseInt(tokens[1])) {
 								user.setGr(gr);
-								if (gr.getUsers().size() > 1)
+								if (gr.getUsers().size() > 1) {
 									gr.setStart(true);
+									gr.gameStart();
+								}
 								new GameThread(socket,user).start();
 							}
 						}
