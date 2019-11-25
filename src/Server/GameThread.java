@@ -31,6 +31,7 @@ public class GameThread extends Thread {
 			while (true) {
 				String request = (String) ois.readObject();
 				String[] tokens = request.split("::");
+				System.out.println(request);
 				if ("isStart".contentEquals(tokens[0])) {
 					boolean a =true;
 					while (a) {
@@ -52,7 +53,6 @@ public class GameThread extends Thread {
 				}else if("roll".contentEquals(tokens[0])) {
 					for(int i=0;i<rolled.length;i++) {
 						rolled[i]= new Random().nextInt(6);
-						oos.writeObject(rolled);
 					}
 					oos.writeObject(rolled);
 				}else if("turnEnd".contentEquals(tokens[0])) {
@@ -63,6 +63,7 @@ public class GameThread extends Thread {
 						gr.setTurn(0);
 					}
 				}
+				oos.reset();
 			}
 		} catch (SocketException e) {
 			System.out.println("[GameThread]lost connection");

@@ -107,10 +107,10 @@ public class RoomWindow extends JFrame {
 		}
 		// 주사위
 		for (int i = 0; i < diceImages.length; i++) {
-			diceImages[i] = new ImageIcon("img/diec" + (i + 1) + "_1.png");
+			diceImages[i] = new ImageIcon("img/dice" + (i + 1) + "_1.png");
 		}
 		for (int i = 0; i < dices.length; i++) {
-			dices[i] = new JButton();
+			dices[i] = new JButton(diceImages[i]);
 			dices[i].setBounds(dicex, dicey, 70, 70);
 			dicex += 87;
 			add(dices[i]);
@@ -122,10 +122,21 @@ public class RoomWindow extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				rollcount++;
-				
+				if(rollcount>=2) {
+					roll.setEnabled(false);
+				}
 				try {
 					oos.writeObject("roll::");
+					newroll = (int[])ois.readObject();
+					for(int i=0;i<newroll.length;i++) {
+						if(myroll[1][i]==0) {
+							myroll[0][i]=newroll[i];
+							dices[i].setIcon(diceImages[myroll[0][i]]);
+						}
+					}
 				} catch (IOException e1) {
+					e1.printStackTrace();
+				} catch (ClassNotFoundException e1) {
 					e1.printStackTrace();
 				}
 			}
@@ -138,31 +149,31 @@ public class RoomWindow extends JFrame {
 		add(roll);
 		setVisible(true);
 		
-		new Thread() {
-			public void run() {
-				try {
-					
-					String request = "isStart::";
-					oos.writeObject(request);
-					String oppo_nick = (String)ois.readObject();
-					opponent.setText(oppo_nick);
-					opponent2.setText(oppo_nick);
-					while(true) {
-						request = "isMyturn::";
-						oos.writeObject(request);
-						String response = (String) ois.readObject();
-						String[] tokens = request.split("::");
-						if("turn".contentEquals(tokens[0])) {
-							
-						}
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				} catch(ClassNotFoundException e) {
-					e.printStackTrace();
-				}
-			}
-		}.start();
+//		new Thread() {
+//			public void run() {
+//				try {
+//					String request = "";
+//					String request = "isStart::";
+//					oos.writeObject(request);
+//					String oppo_nick = (String)ois.readObject();
+//					opponent.setText(oppo_nick);
+//					opponent2.setText(oppo_nick);
+//					while(true) {
+//						request = "isMyturn::";
+//						oos.writeObject(request);
+//						String response = (String) ois.readObject();
+//						String[] tokens = request.split("::");
+//						if("turn".contentEquals(tokens[0])) {
+//							
+//						}
+//					}
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				} catch(ClassNotFoundException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		}.start();
 	}
 
 }

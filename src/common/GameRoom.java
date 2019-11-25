@@ -12,6 +12,7 @@ public class GameRoom implements Serializable{
 	private ArrayList<User> users= new ArrayList<>();
 	private boolean isStart = false;
 	private Map<String, int[]> score = Collections.synchronizedMap(new HashMap<String, int[]>());
+	private int[] roll = new int[5];
 	private int turn;
 	
 	public GameRoom(User user, int seq, String rName) {
@@ -65,5 +66,11 @@ public class GameRoom implements Serializable{
 	}
 	public void setTurn(int turn) {
 		this.turn = turn;
+	}
+	public int[] getRoll() {
+		return roll;
+	}
+	public void setRoll(int[] roll) {
+		this.roll = roll;
 	}
 }
