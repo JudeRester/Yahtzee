@@ -19,15 +19,14 @@ import common.User;
 public class RoomWindow extends JFrame {
 	private JPanel contentPane;
 	private JLabel me, me2, opponent, opponent2;
-	private JLabel op_one, op_two, op_three, op_four, op_five, op_six, op_tok, op_fok, op_fullh, op_ss, op_ls,
-			op_yahtzee, op_any;
-	private JLabel[] opp = { op_one, op_two, op_three, op_four, op_five, op_six, op_tok, op_fok, op_fullh, op_ss, op_ls,
-			op_yahtzee, op_any };
+	private JLabel[] opp = new JLabel[13];
 	private JButton roll;
 	private JButton[] buttons = new JButton[13];
+	private int[] checked = new int[13];
+	private int[] hold = new int[5];
 	private JButton[] dices = new JButton[5];
-	private ImageIcon dice1, dice2, dice3, dice4, dice5, dice6;
-	private ImageIcon[] diceImages = { dice1, dice2, dice3, dice4, dice5, dice6 };
+	private ImageIcon[] diceImages = new ImageIcon[6];
+	private ImageIcon[] holdeddice = new ImageIcon[6];
 	private User user;
 	private Socket socket;
 	private int x = 87;
@@ -79,16 +78,14 @@ public class RoomWindow extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				for (int i = 0; i < buttons.length; i++) {
 					if (e.getSource() == buttons[i]) {
-						System.out.println(i);
 						buttons[i].setText(Integer.toString(calc(myroll,i)));
 					}
 				}
-//				try {
-//					oos.writeObject("turnEnd::");
-//					roll.setEnabled(false);
-//				} catch (IOException e1) {
-//					e1.printStackTrace();
-//				}
+				try {
+					oos.writeObject("turnEnd::");
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
 			}
 		};
 
@@ -113,11 +110,36 @@ public class RoomWindow extends JFrame {
 		for (int i = 0; i < diceImages.length; i++) {
 			diceImages[i] = new ImageIcon("img/dice" + (i + 1) + "_1.png");
 		}
+		for (int i = 0; i < holdeddice.length; i++) {
+			holdeddice[i] = new ImageIcon("img/dice" + (i + 1) + "_2.png");
+		}
+		ActionListener d_action= new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				for (int i = 0; i < dices.length; i++) {
+					
+					if (e.getSource() == dices[i]) {
+						if(myroll[1][i]==0) {
+							myroll[1][i]=1;
+						}else {
+							myroll[1][i]=0;
+						}
+						if(myroll[1][i]==0)
+							dices[i].setIcon(diceImages[myroll[0][i]-1]);
+						else
+							dices[i].setIcon(holdeddice[myroll[0][i]-1]);
+						
+					}
+				}
+			}
+		}; 
 		for (int i = 0; i < dices.length; i++) {
 			dices[i] = new JButton(diceImages[i]);
 			dices[i].setBounds(dicex, dicey, 70, 70);
 			dicex += 87;
 			add(dices[i]);
+			dices[i].addActionListener(d_action);
 		}
 
 		roll = new JButton("주사위 굴리기");
@@ -125,6 +147,7 @@ public class RoomWindow extends JFrame {
 		roll.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				button_enable();
 				if (rollcount++ >= 2) {
 					roll.setEnabled(false);
 				}
@@ -142,7 +165,7 @@ public class RoomWindow extends JFrame {
 		add(back);
 		add(roll);
 		setVisible(true);
-
+		button_disable();
 		// 스레드
 		new Thread() {
 			public void run() {
@@ -154,6 +177,7 @@ public class RoomWindow extends JFrame {
 						String[] tokens = response.split("::");
 						if ("start".contentEquals(tokens[0])) {
 							System.out.println("start!");
+							
 							if (user.getNickname().contentEquals(tokens[1])) {
 								opponent.setText(tokens[2]);
 								opponent2.setText(tokens[2]);
@@ -167,6 +191,15 @@ public class RoomWindow extends JFrame {
 									myroll[0][i] = Integer.parseInt(tokens[i+1])+1;
 									dices[i].setIcon(diceImages[myroll[0][i]-1]);
 								}
+							}
+						} else if("isYourTurn".contentEquals(tokens[0])) {
+							if(user.getNickname().contentEquals(tokens[1])) {
+								roll.setEnabled(true);
+								for(int i=0;i<myroll[1].length;i++) {
+									myroll[1][i]=0;
+								}
+								rollcount=0;
+								
 							}
 						}
 					}
@@ -229,7 +262,7 @@ public class RoomWindow extends JFrame {
 		case 6:
 			for (int i=0;i<roll[0].length;i++) {
 				temp[roll[0][i]]++;
-				sum += roll[0][1];
+				sum += roll[0][i];
 			}
 			for (int i=1;i<temp.length;i++) {
 				if (temp[i] > 2) {
@@ -240,7 +273,7 @@ public class RoomWindow extends JFrame {
 		case 7:
 			for (int i=0;i<roll[0].length;i++) {
 				temp[roll[0][i]]++;
-				sum += roll[0][1];
+				sum += roll[0][i];
 			}
 			for (int i=1;i<temp.length;i++) {
 				if (temp[i] > 3) {
@@ -309,7 +342,28 @@ public class RoomWindow extends JFrame {
 			}
 			break;
 		}
+		checked[type]++;
+		button_disable();
 		return x;
 	}
-
+	public void button_enable() {
+		for(int i=0;i<buttons.length;i++) {
+			if(checked[i]==0) {
+				buttons[i].setEnabled(true);
+			}
+		}
+		for(int i=0;i<dices.length;i++) {
+			dices[i].setEnabled(true);
+		}
+		roll.setEnabled(true);
+	}
+	public void button_disable() {
+		for(int i=0;i<buttons.length;i++) {
+			buttons[i].setEnabled(false);
+		}
+		for(int i=0;i<dices.length;i++) {
+			dices[i].setEnabled(false);
+		}
+		roll.setEnabled(false);
+	}
 }

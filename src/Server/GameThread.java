@@ -16,7 +16,7 @@ public class GameThread extends Thread {
 	private User user;
 	private GameRoom gr;
 	private int[] rolled = new int[5];
-
+	private String[] users = new String[2];
 	public GameThread(Socket socket, User user) {
 		this.socket = socket;
 		this.user = user;
@@ -37,36 +37,33 @@ public class GameThread extends Thread {
 			while (true) {
 				String request = (String) ois.readObject();
 				String[] tokens = request.split("::");
-				System.out.println(request);
 				if ("isStart".contentEquals(tokens[0])) {
 					while (true) {
 						if (isStart()) {
-							String user1 = gr.getUsers().get(0).getNickname();
-							String user2 = gr.getUsers().get(1).getNickname();
-							dao.broadcast(gr, "start::" + user1 + "::" + user2);
+							for(int i=0;i<2;i++) {
+								users[i]=gr.getUsers().get(i).getNickname();
+							}
+//							String user1 = gr.getUsers().get(0).getNickname();
+//							String user2 = gr.getUsers().get(1).getNickname();
+							dao.broadcast(gr, "start::" + users[0] + "::" + users[1]);
+							getTurn();
 							break;
 						}
 					}
 				} else if ("isMyturn".contentEquals(tokens[0])) {
 					while (gr.getTurn() == gr.getUsers().indexOf(user)) {
-
+						
 					}
 				} else if ("roll".contentEquals(tokens[0])) {
 					StringBuffer response = new StringBuffer("rolled");
 					for (int i = 0; i < rolled.length; i++) {
 						int a = new Random().nextInt(6);
-						System.out.println("dice : "+a);
 						response.append("::" + a);
 					}
-					System.out.println(response.toString());
 					dao.broadcast(gr, response.toString());
 				} else if ("turnEnd".contentEquals(tokens[0])) {
-					int turn = gr.getTurn();
-					if (turn == 0) {
-						gr.setTurn(1);
-					} else {
-						gr.setTurn(0);
-					}
+					gr.setTurn(gr.getTurn()+1);
+					getTurn();
 				}
 			}
 		} catch (
@@ -88,5 +85,17 @@ public class GameThread extends Thread {
 			}
 		}
 		return gr.isStart();
+	}
+	public void getTurn() {
+		int turn=gr.getTurn();
+		String response="";
+		if(turn==26) {
+			response = "gameSet";
+			
+			dao.broadcast(gr, response);
+		}else {
+			response= "isYourTurn::"+users[turn%2];
+			dao.broadcast(gr, response);
+		}
 	}
 }

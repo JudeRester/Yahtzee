@@ -114,8 +114,12 @@ public class RoomList extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String rName = JOptionPane.showInputDialog(null, "방 제목을 입력해 주세요");
-				createRoom(rName);
-				System.out.println("방 만듬");
+				if (rName == null) {
+					JOptionPane.showMessageDialog(null, "제목을 입력하세요");
+				} else {
+					createRoom(rName);
+					System.out.println("방 만듬");
+				}
 			}
 		});
 		// 새로고침
@@ -151,7 +155,7 @@ public class RoomList extends JFrame {
 					int index = list.getSelectedIndex();
 //					rm.remove(index);
 					if (index == -1) {
-						//something to do if there's no room
+						// something to do if there's no room
 					} else {
 						int seq = rooms.get(index).getSeq();
 						System.out.println(seq);
