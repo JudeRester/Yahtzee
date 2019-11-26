@@ -1,9 +1,6 @@
 package common;
 
 import java.io.Serializable;
-import java.net.Socket;
-
-import Server.Server;
 
 public class User implements Serializable{
 	private String id, passwd, name, nickname, email;

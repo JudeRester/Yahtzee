@@ -12,6 +12,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -43,9 +44,12 @@ public class RoomWindow extends JFrame {
 	private int[][] myroll = new int[2][5];
 	private int[] newroll = new int[5];
 	private int rollcount = 0;
-	private Font font = new Font("SansSerif",Font.BOLD,16);
+	private int type=0;
+	private String score=null;
+	private Font font = new Font("SansSerif", Font.BOLD, 30);
+
 	public RoomWindow(User user, Socket socket) {
-		
+
 		this.user = user;
 		this.socket = socket;
 		try {
@@ -70,10 +74,10 @@ public class RoomWindow extends JFrame {
 		opponent = new JLabel("waiting...");
 		me2 = new JLabel(user.getNickname());
 		opponent2 = new JLabel("waiting...");
-		me.setBounds(85, 5, 50, 12);
-		opponent.setBounds(155, 5, 50, 12);
-		me2.setBounds(315, 5, 50, 12);
-		opponent2.setBounds(385, 5, 50, 12);
+		me.setBounds(85, 5, 55, 12);
+		opponent.setBounds(155, 5, 55, 12);
+		me2.setBounds(315, 5, 55, 12);
+		opponent2.setBounds(385, 5, 55, 12);
 
 		JLabel back = new JLabel(new ImageIcon("img/gameboard_1.png"));
 		back.setBounds(0, 25, 455, 711);
@@ -84,11 +88,17 @@ public class RoomWindow extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				for (int i = 0; i < buttons.length; i++) {
 					if (e.getSource() == buttons[i]) {
-						buttons[i].setText(Integer.toString(calc(myroll,i)));
+						type=i;
+						score = Integer.toString(calc(myroll));
+						buttons[i].setText(score);
 					}
 				}
 				try {
-					oos.writeObject("turnEnd::");
+					String request = "turnEnd::"+type+"::"+score;
+					oos.writeObject(request);
+					for (int i = 0; i < myroll[1].length; i++) {
+						myroll[1][i] = 0;
+					}
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -99,19 +109,26 @@ public class RoomWindow extends JFrame {
 		for (int i = 0; i < buttons.length; i++) {
 			buttons[i] = new JButton();
 			buttons[i].setFont(font);
-			buttons[i].setOpaque(false);
-			opp[i] = new JLabel();
 			buttons[i].setBounds(x, y, 50, 50);
+			buttons[i].addActionListener(b_action);
+			buttons[i].setContentAreaFilled(false);//버튼을 투명하게
+			buttons[i].setBorderPainted(false);//버튼 테두리 없앰
+			buttons[i].setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));//버튼 내부 여백 없앰
+			
+			opp[i] = new JLabel();
 			opp[i].setBounds(x + 70, y, 50, 50);
+			opp[i].setFont(new Font("SansSerif",Font.BOLD,30));
+			opp[i].setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 0));
 			if (i == 5) {
 				y = 32;
 				x = 315;
 			} else {
 				y += 81;
 			}
-			buttons[i].addActionListener(b_action);
+			
 			add(buttons[i]);
 			add(opp[i]);
+			
 		}
 
 		// 주사위
@@ -121,27 +138,26 @@ public class RoomWindow extends JFrame {
 		for (int i = 0; i < holdeddice.length; i++) {
 			holdeddice[i] = new ImageIcon("img/dice" + (i + 1) + "_2.png");
 		}
-		ActionListener d_action= new ActionListener() {
+		ActionListener d_action = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
 				for (int i = 0; i < dices.length; i++) {
-					
+
 					if (e.getSource() == dices[i]) {
-						if(myroll[1][i]==0) {
-							myroll[1][i]=1;
-						}else {
-							myroll[1][i]=0;
+						if (myroll[1][i] == 0) {
+							myroll[1][i] = 1;
+						} else {
+							myroll[1][i] = 0;
 						}
-						if(myroll[1][i]==0)
-							dices[i].setIcon(diceImages[myroll[0][i]-1]);
+						if (myroll[1][i] == 0)
+							dices[i].setIcon(diceImages[myroll[0][i] - 1]);
 						else
-							dices[i].setIcon(holdeddice[myroll[0][i]-1]);
-						
+							dices[i].setIcon(holdeddice[myroll[0][i] - 1]);
 					}
 				}
 			}
-		}; 
+		};
 		for (int i = 0; i < dices.length; i++) {
 			dices[i] = new JButton(diceImages[i]);
 			dices[i].setBounds(dicex, dicey, 70, 70);
@@ -185,7 +201,7 @@ public class RoomWindow extends JFrame {
 						String[] tokens = response.split("::");
 						if ("start".contentEquals(tokens[0])) {
 							System.out.println("start!");
-							
+
 							if (user.getNickname().contentEquals(tokens[1])) {
 								opponent.setText(tokens[2]);
 								opponent2.setText(tokens[2]);
@@ -194,20 +210,23 @@ public class RoomWindow extends JFrame {
 								opponent2.setText(tokens[1]);
 							}
 						} else if ("rolled".contentEquals(tokens[0])) {
-							for (int i = 0; i <myroll[1].length; i++) {
+							for (int i = 0; i < myroll[1].length; i++) {
 								if (myroll[1][i] == 0) {
-									myroll[0][i] = Integer.parseInt(tokens[i+1])+1;
-									dices[i].setIcon(diceImages[myroll[0][i]-1]);
+									myroll[0][i] = Integer.parseInt(tokens[i + 1]) + 1;
+									dices[i].setIcon(diceImages[myroll[0][i] - 1]);
 								}
 							}
-						} else if("isYourTurn".contentEquals(tokens[0])) {
-							if(user.getNickname().contentEquals(tokens[1])) {
+						} else if ("isYourTurn".contentEquals(tokens[0])) {
+							if (user.getNickname().contentEquals(tokens[1])) {
 								roll.setEnabled(true);
-								for(int i=0;i<myroll[1].length;i++) {
-									myroll[1][i]=0;
+								if(!"-1".contentEquals(tokens[2])) {
+									for(int i=0;i<opp.length;i++) {
+										if(i==Integer.parseInt(tokens[2])) {
+											opp[i].setText(tokens[3]);
+										}
+									}
 								}
-								rollcount=0;
-								
+								rollcount = 0;
 							}
 						}
 					}
@@ -220,7 +239,7 @@ public class RoomWindow extends JFrame {
 		}.start();
 	}
 
-	public int calc(int[][] roll, int type) {
+	public int calc(int[][] roll) {
 		int x = 0;
 		int[] temp = new int[7];
 		int sum = 0;
@@ -268,22 +287,22 @@ public class RoomWindow extends JFrame {
 			}
 			break;
 		case 6:
-			for (int i=0;i<roll[0].length;i++) {
+			for (int i = 0; i < roll[0].length; i++) {
 				temp[roll[0][i]]++;
 				sum += roll[0][i];
 			}
-			for (int i=1;i<temp.length;i++) {
+			for (int i = 1; i < temp.length; i++) {
 				if (temp[i] > 2) {
 					x = sum;
 				}
 			}
 			break;
 		case 7:
-			for (int i=0;i<roll[0].length;i++) {
+			for (int i = 0; i < roll[0].length; i++) {
 				temp[roll[0][i]]++;
 				sum += roll[0][i];
 			}
-			for (int i=1;i<temp.length;i++) {
+			for (int i = 1; i < temp.length; i++) {
 				if (temp[i] > 3) {
 					x = sum;
 				}
@@ -292,7 +311,7 @@ public class RoomWindow extends JFrame {
 		case 8:
 			boolean three = false;
 			boolean two = false;
-			for (int i=0;i<roll[0].length;i++) {
+			for (int i = 0; i < roll[0].length; i++) {
 				temp[roll[0][i]]++;
 			}
 			for (int t : temp) {
@@ -305,10 +324,10 @@ public class RoomWindow extends JFrame {
 				x = 25;
 			break;
 		case 9:
-			for (int i=0;i< roll[0].length;i++) {
+			for (int i = 0; i < roll[0].length; i++) {
 				temp[roll[0][i]]++;
 			}
-			for (int i=0;i<temp.length;i++) {
+			for (int i = 0; i < temp.length; i++) {
 				if (temp[i] > 0) {
 					sum++;
 					if (sum > 3) {
@@ -320,10 +339,10 @@ public class RoomWindow extends JFrame {
 			}
 			break;
 		case 10:
-			for (int i=0;i< roll[0].length;i++) {
+			for (int i = 0; i < roll[0].length; i++) {
 				temp[roll[0][i]]++;
 			}
-			for (int i=0;i<temp.length;i++) {
+			for (int i = 0; i < temp.length; i++) {
 				if (temp[i] > 0) {
 					sum++;
 					if (sum > 4) {
@@ -335,7 +354,7 @@ public class RoomWindow extends JFrame {
 			}
 			break;
 		case 11:
-			for (int i=0;i< roll[0].length;i++) {
+			for (int i = 0; i < roll[0].length; i++) {
 				temp[roll[0][i]]++;
 			}
 			for (int t : temp) {
@@ -354,22 +373,24 @@ public class RoomWindow extends JFrame {
 		button_disable();
 		return x;
 	}
+
 	public void button_enable() {
-		for(int i=0;i<buttons.length;i++) {
-			if(checked[i]==0) {
+		for (int i = 0; i < buttons.length; i++) {
+			if (checked[i] == 0) {
 				buttons[i].setEnabled(true);
 			}
 		}
-		for(int i=0;i<dices.length;i++) {
+		for (int i = 0; i < dices.length; i++) {
 			dices[i].setEnabled(true);
 		}
 		roll.setEnabled(true);
 	}
+
 	public void button_disable() {
-		for(int i=0;i<buttons.length;i++) {
+		for (int i = 0; i < buttons.length; i++) {
 			buttons[i].setEnabled(false);
 		}
-		for(int i=0;i<dices.length;i++) {
+		for (int i = 0; i < dices.length; i++) {
 			dices[i].setEnabled(false);
 		}
 		roll.setEnabled(false);

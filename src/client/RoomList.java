@@ -2,6 +2,7 @@ package client;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -43,7 +44,7 @@ public class RoomList extends JFrame {
 	private User user;
 	private ObjectOutputStream oos;
 	private ObjectInputStream ois;
-
+	private Font font = new Font("SansSerif",Font.BOLD,20);
 	public RoomList(User user, Socket socket) {
 		try {
 			oos = new ObjectOutputStream(socket.getOutputStream());
@@ -96,7 +97,7 @@ public class RoomList extends JFrame {
 				+ "승률 : " + rates + "<br>" + "최고 득점 : " + user.getHigh() + "<br></html>");
 		lb_uInfo.setForeground(Color.white);
 		list = new JList<String>(rm);
-
+		list.setFont(font);
 		// 버튼
 		bt_logout = new JButton("로그아웃");
 		// 로그아웃 버튼 액션

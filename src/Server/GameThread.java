@@ -47,7 +47,7 @@ public class GameThread extends Thread {
 //							String user1 = gr.getUsers().get(0).getNickname();
 //							String user2 = gr.getUsers().get(1).getNickname();
 							dao.broadcast(gr, "start::" + users[0] + "::" + users[1]);
-							getTurn();
+							getTurn(-1,-1);
 							break;
 						}
 					}
@@ -64,7 +64,7 @@ public class GameThread extends Thread {
 					dao.broadcast(gr, response.toString());
 				} else if ("turnEnd".contentEquals(tokens[0])) {
 					gr.setTurn(gr.getTurn() + 1);
-					getTurn();
+					getTurn(Integer.parseInt(tokens[1]),Integer.parseInt(tokens[2]));
 				}
 			}
 		} catch (SocketException e) {
@@ -86,7 +86,7 @@ public class GameThread extends Thread {
 		return gr.isStart();
 	}
 
-	public void getTurn() {
+	public void getTurn(int type, int score) {
 		int turn = gr.getTurn();
 		String response = "";
 		if (turn == 26) {
@@ -94,7 +94,7 @@ public class GameThread extends Thread {
 
 			dao.broadcast(gr, response);
 		} else {
-			response = "isYourTurn::" + users[turn % 2];
+			response = "isYourTurn::" + users[turn % 2]+"::"+type+"::"+score;
 			dao.broadcast(gr, response);
 		}
 	}
