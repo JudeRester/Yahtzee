@@ -87,7 +87,6 @@ public class RoomDAO {
 		for (ObjectOutputStream o : users.get(gr)) {
 			try {
 				o.writeObject(response);
-				o.reset();
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

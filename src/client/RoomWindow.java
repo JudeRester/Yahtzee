@@ -23,10 +23,9 @@ public class RoomWindow extends JFrame {
 			op_yahtzee, op_any;
 	private JLabel[] opp = { op_one, op_two, op_three, op_four, op_five, op_six, op_tok, op_fok, op_fullh, op_ss, op_ls,
 			op_yahtzee, op_any };
-	private JButton one, two, three, four, five, six, tok, fok, fullh, ss, ls, yahtzee, any, roll;
-	private JButton[] buttons = { one, two, three, four, five, six, tok, fok, fullh, ss, ls, yahtzee, any };
-	private JButton dice_1, dice_2, dice_3, dice_4, dice_5;
-	private JButton[] dices = { dice_1, dice_2, dice_3, dice_4, dice_5 };
+	private JButton roll;
+	private JButton[] buttons = new JButton[13];
+	private JButton[] dices = new JButton[5];
 	private ImageIcon dice1, dice2, dice3, dice4, dice5, dice6;
 	private ImageIcon[] diceImages = { dice1, dice2, dice3, dice4, dice5, dice6 };
 	private User user;
@@ -78,23 +77,12 @@ public class RoomWindow extends JFrame {
 		ActionListener b_action = new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JButton clicked = (JButton) e.getSource();
-				if (e.getSource().equals(one)) {
-					clicked.setText("1");
-				} else if (e.getSource().equals(two)) {
-					clicked.setText("2");
-				} else if (e.getSource().equals(three)) {
-					clicked.setText("3");
-				} else if (e.getSource().equals(four)) {
-					clicked.setText("4");
-				} else if (e.getSource().equals(five)) {
-					clicked.setText("5");
-				} else {
-					System.out.println("dmdk");
+				for (int i = 0; i < buttons.length; i++) {
+					if (e.getSource() == buttons[i]) {
+						System.out.println(i);
+						buttons[i].setText(Integer.toString(calc(myroll,i)));
+					}
 				}
-
-				clicked.setEnabled(false);
-
 //				try {
 //					oos.writeObject("turnEnd::");
 //					roll.setEnabled(false);
@@ -120,6 +108,7 @@ public class RoomWindow extends JFrame {
 			add(buttons[i]);
 			add(opp[i]);
 		}
+
 		// 주사위
 		for (int i = 0; i < diceImages.length; i++) {
 			diceImages[i] = new ImageIcon("img/dice" + (i + 1) + "_1.png");
@@ -136,16 +125,14 @@ public class RoomWindow extends JFrame {
 		roll.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				rollcount++;
-				if (rollcount >= 2) {
+				if (rollcount++ >= 2) {
 					roll.setEnabled(false);
 				}
 				try {
 					oos.writeObject("roll::");
-					oos.reset();
 				} catch (IOException e1) {
 					e1.printStackTrace();
-				} 
+				}
 			}
 		});
 		add(me);
@@ -155,40 +142,174 @@ public class RoomWindow extends JFrame {
 		add(back);
 		add(roll);
 		setVisible(true);
+
+		// 스레드
 		new Thread() {
 			public void run() {
 				try {
 					String request = "isStart::";
 					oos.writeObject(request);
-					oos.reset();
-					while(true) {
+					while (true) {
 						String response = (String) ois.readObject();
 						String[] tokens = response.split("::");
-						if("start".contentEquals(tokens[0])) {
+						if ("start".contentEquals(tokens[0])) {
 							System.out.println("start!");
-							if(user.getNickname().contentEquals(tokens[1])) {
+							if (user.getNickname().contentEquals(tokens[1])) {
 								opponent.setText(tokens[2]);
 								opponent2.setText(tokens[2]);
-							}else {
+							} else {
 								opponent.setText(tokens[1]);
 								opponent2.setText(tokens[1]);
 							}
-						}else if("rolled".contentEquals(tokens[0])) {
-							for (int i = 1; i <= newroll.length; i++) {
-								if (myroll[1][i-1] == 0) {
-									myroll[0][i-1] = Integer.parseInt(tokens[i]);
-									dices[i-1].setIcon(diceImages[myroll[0][i-1]]);
+						} else if ("rolled".contentEquals(tokens[0])) {
+							for (int i = 0; i <myroll[1].length; i++) {
+								if (myroll[1][i] == 0) {
+									myroll[0][i] = Integer.parseInt(tokens[i+1])+1;
+									dices[i].setIcon(diceImages[myroll[0][i]-1]);
 								}
 							}
 						}
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
-				} catch(ClassNotFoundException e) {
+				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
 				}
 			}
 		}.start();
+	}
+
+	public int calc(int[][] roll, int type) {
+		int x = 0;
+		int[] temp = new int[7];
+		int sum = 0;
+		switch (type) {
+		case 0:
+			for (int r : roll[0]) {
+				if (r == 1) {
+					x += 1;
+				}
+			}
+			break;
+		case 1:
+			for (int r : roll[0]) {
+				if (r == 2) {
+					x += 2;
+				}
+			}
+			break;
+		case 2:
+			for (int r : roll[0]) {
+				if (r == 3) {
+					x += 3;
+				}
+			}
+			break;
+		case 3:
+			for (int r : roll[0]) {
+				if (r == 4) {
+					x += 4;
+				}
+			}
+			break;
+		case 4:
+			for (int r : roll[0]) {
+				if (r == 5) {
+					x += 5;
+				}
+			}
+			break;
+		case 5:
+			for (int r : roll[0]) {
+				if (r == 6) {
+					x += 6;
+				}
+			}
+			break;
+		case 6:
+			for (int i=0;i<roll[0].length;i++) {
+				temp[roll[0][i]]++;
+				sum += roll[0][1];
+			}
+			for (int i=1;i<temp.length;i++) {
+				if (temp[i] > 2) {
+					x = sum;
+				}
+			}
+			break;
+		case 7:
+			for (int i=0;i<roll[0].length;i++) {
+				temp[roll[0][i]]++;
+				sum += roll[0][1];
+			}
+			for (int i=1;i<temp.length;i++) {
+				if (temp[i] > 3) {
+					x = sum;
+				}
+			}
+			break;
+		case 8:
+			boolean three = false;
+			boolean two = false;
+			for (int i=0;i<roll[0].length;i++) {
+				temp[roll[0][i]]++;
+			}
+			for (int t : temp) {
+				if (t == 3)
+					three = true;
+				if (t == 2)
+					two = true;
+			}
+			if (three && two)
+				x = 25;
+			break;
+		case 9:
+			for (int i=0;i< roll[0].length;i++) {
+				temp[roll[0][i]]++;
+			}
+			for (int i=0;i<temp.length;i++) {
+				if (temp[i] > 0) {
+					sum++;
+					if (sum > 3) {
+						x = 30;
+					}
+				} else {
+					sum = 0;
+				}
+			}
+			break;
+		case 10:
+			for (int i=0;i< roll[0].length;i++) {
+				temp[roll[0][i]]++;
+			}
+			for (int i=0;i<temp.length;i++) {
+				if (temp[i] > 0) {
+					sum++;
+					if (sum > 4) {
+						x = 40;
+					}
+				} else {
+					sum = 0;
+				}
+			}
+			break;
+		case 11:
+			for (int i=0;i< roll[0].length;i++) {
+				temp[roll[0][i]]++;
+			}
+			for (int t : temp) {
+				if (t > 4) {
+					x = 50;
+				}
+			}
+			break;
+		case 12:
+			for (int r : roll[0]) {
+				x += r;
+			}
+			break;
+		}
+		return x;
 	}
 
 }

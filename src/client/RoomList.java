@@ -150,9 +150,13 @@ public class RoomList extends JFrame {
 				if (e.getClickCount() == 2) {
 					int index = list.getSelectedIndex();
 //					rm.remove(index);
-					int seq = rooms.get(index).getSeq();
-					System.out.println(seq);
-					enterRoom(seq);
+					if (index == -1) {
+						//something to do if there's no room
+					} else {
+						int seq = rooms.get(index).getSeq();
+						System.out.println(seq);
+						enterRoom(seq);
+					}
 				}
 			}
 		});
@@ -202,7 +206,6 @@ public class RoomList extends JFrame {
 		try {
 			String request = "create::" + rName;
 			oos.writeObject(request);
-			oos.flush();
 			new RoomWindow(user, socket);
 			dispose();
 		} catch (IOException e) {

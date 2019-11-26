@@ -39,13 +39,11 @@ public class GameThread extends Thread {
 				String[] tokens = request.split("::");
 				System.out.println(request);
 				if ("isStart".contentEquals(tokens[0])) {
-					boolean a = true;
-					while (a) {
+					while (true) {
 						if (isStart()) {
-							String user1=gr.getUsers().get(0).getNickname();
-							String user2=gr.getUsers().get(1).getNickname();
-							dao.broadcast(gr, "start::"+user1+"::"+user2);
-							a = false;
+							String user1 = gr.getUsers().get(0).getNickname();
+							String user2 = gr.getUsers().get(1).getNickname();
+							dao.broadcast(gr, "start::" + user1 + "::" + user2);
 							break;
 						}
 					}
@@ -56,8 +54,11 @@ public class GameThread extends Thread {
 				} else if ("roll".contentEquals(tokens[0])) {
 					StringBuffer response = new StringBuffer("rolled");
 					for (int i = 0; i < rolled.length; i++) {
-						response.append("::"+new Random().nextInt(6));
+						int a = new Random().nextInt(6);
+						System.out.println("dice : "+a);
+						response.append("::" + a);
 					}
+					System.out.println(response.toString());
 					dao.broadcast(gr, response.toString());
 				} else if ("turnEnd".contentEquals(tokens[0])) {
 					int turn = gr.getTurn();
@@ -67,7 +68,6 @@ public class GameThread extends Thread {
 						gr.setTurn(0);
 					}
 				}
-				oos.reset();
 			}
 		} catch (
 
