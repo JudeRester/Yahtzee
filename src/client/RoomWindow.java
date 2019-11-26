@@ -1,6 +1,10 @@
 package client;
 
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -13,6 +17,7 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.Border;
 
 import common.User;
 
@@ -38,8 +43,9 @@ public class RoomWindow extends JFrame {
 	private int[][] myroll = new int[2][5];
 	private int[] newroll = new int[5];
 	private int rollcount = 0;
-
+	private Font font = new Font("SansSerif",Font.BOLD,16);
 	public RoomWindow(User user, Socket socket) {
+		
 		this.user = user;
 		this.socket = socket;
 		try {
@@ -92,6 +98,8 @@ public class RoomWindow extends JFrame {
 		// 내 점수 버튼 및 상대 점수 라벨
 		for (int i = 0; i < buttons.length; i++) {
 			buttons[i] = new JButton();
+			buttons[i].setFont(font);
+			buttons[i].setOpaque(false);
 			opp[i] = new JLabel();
 			buttons[i].setBounds(x, y, 50, 50);
 			opp[i].setBounds(x + 70, y, 50, 50);

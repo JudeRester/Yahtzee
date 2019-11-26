@@ -34,7 +34,7 @@ public class RoomThread extends Thread {
 					ArrayList<GameRoom> rl = dao.getaRoomList();
 					System.out.println(request);
 					oos.writeUnshared(rl);
-					System.out.println("loading room list" +rl.size());
+					System.out.println("room list loaded");
 				} else if ("create".contentEquals(tokens[0])) {
 					user.setGr(dao.createRoom(user, tokens[1], socket));
 					System.out.println("room has been created");

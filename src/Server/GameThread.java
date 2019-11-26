@@ -17,6 +17,7 @@ public class GameThread extends Thread {
 	private GameRoom gr;
 	private int[] rolled = new int[5];
 	private String[] users = new String[2];
+
 	public GameThread(Socket socket, User user) {
 		this.socket = socket;
 		this.user = user;
@@ -40,8 +41,8 @@ public class GameThread extends Thread {
 				if ("isStart".contentEquals(tokens[0])) {
 					while (true) {
 						if (isStart()) {
-							for(int i=0;i<2;i++) {
-								users[i]=gr.getUsers().get(i).getNickname();
+							for (int i = 0; i < 2; i++) {
+								users[i] = gr.getUsers().get(i).getNickname();
 							}
 //							String user1 = gr.getUsers().get(0).getNickname();
 //							String user2 = gr.getUsers().get(1).getNickname();
@@ -52,7 +53,7 @@ public class GameThread extends Thread {
 					}
 				} else if ("isMyturn".contentEquals(tokens[0])) {
 					while (gr.getTurn() == gr.getUsers().indexOf(user)) {
-						
+
 					}
 				} else if ("roll".contentEquals(tokens[0])) {
 					StringBuffer response = new StringBuffer("rolled");
@@ -62,13 +63,11 @@ public class GameThread extends Thread {
 					}
 					dao.broadcast(gr, response.toString());
 				} else if ("turnEnd".contentEquals(tokens[0])) {
-					gr.setTurn(gr.getTurn()+1);
+					gr.setTurn(gr.getTurn() + 1);
 					getTurn();
 				}
 			}
-		} catch (
-
-		SocketException e) {
+		} catch (SocketException e) {
 			System.out.println("[GameThread]lost connection");
 			dao.getRoomlist().get(gr.getSeq()).removeUser(user);
 		} catch (IOException e) {
@@ -86,15 +85,16 @@ public class GameThread extends Thread {
 		}
 		return gr.isStart();
 	}
+
 	public void getTurn() {
-		int turn=gr.getTurn();
-		String response="";
-		if(turn==26) {
+		int turn = gr.getTurn();
+		String response = "";
+		if (turn == 26) {
 			response = "gameSet";
-			
+
 			dao.broadcast(gr, response);
-		}else {
-			response= "isYourTurn::"+users[turn%2];
+		} else {
+			response = "isYourTurn::" + users[turn % 2];
 			dao.broadcast(gr, response);
 		}
 	}
