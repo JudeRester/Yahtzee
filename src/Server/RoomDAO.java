@@ -3,6 +3,7 @@ package Server;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -13,7 +14,7 @@ public class RoomDAO {
 	private ArrayList<GameRoom> roomList = new ArrayList<>();
 	private ArrayList<GameRoom> aRoomList = new ArrayList<>();
 	private HashMap<GameRoom, ArrayList<ObjectOutputStream>> users = new HashMap<>();
-
+	private MemberDAO mDAO;
 	private int seq = 0;
 
 	private RoomDAO() {
@@ -91,5 +92,21 @@ public class RoomDAO {
 				e.printStackTrace();
 			}
 		}
+	}
+	public void endGame(GameRoom gr, User user) {
+		int userIndex=gr.getUsers().indexOf(user);
+		int winner = gr.getWinner();
+		int score = gr.getUserScore(userIndex);
+		try {
+			mDAO = new MemberDAO();
+			if(winner==userIndex||winner==-1) {
+				mDAO.winRec(user, score);
+			}else {
+				mDAO.loseRec(user, score);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
 	}
 }

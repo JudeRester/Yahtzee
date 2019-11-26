@@ -160,4 +160,42 @@ public class MemberDAO {
 		}
 		return user;
 	}
+	public void winRec(User user, int score) {
+		StringBuffer sql = new StringBuffer();
+		sql.append("update member set win=?+1, high=case when ?>? then ? else ? end where id=?");
+		try {
+			pstmt=conn.prepareStatement(sql.toString());
+			pstmt.setInt(1, user.getWin());
+			pstmt.setInt(2, user.getHigh());
+			pstmt.setInt(3, score);
+			pstmt.setInt(4, user.getHigh());
+			pstmt.setInt(5, score);
+			pstmt.setString(6, user.getId());
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally {
+			DataBaseUtil.close(conn,pstmt);
+		}
+		
+	}
+	public void loseRec(User user, int score) {
+		StringBuffer sql = new StringBuffer();
+		sql.append("update member set lose=?+1, high=case when ?>? then ? else ? end where id=?");
+		try {
+			pstmt=conn.prepareStatement(sql.toString());
+			pstmt.setInt(1, user.getLose());
+			pstmt.setInt(2, user.getHigh());
+			pstmt.setInt(3, score);
+			pstmt.setInt(4, user.getHigh());
+			pstmt.setInt(5, score);
+			pstmt.setString(6, user.getId());
+			pstmt.executeUpdate();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}finally {
+			DataBaseUtil.close(conn,pstmt);
+		}
+		
+	}
 }

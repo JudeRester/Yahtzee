@@ -5,6 +5,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.net.SocketException;
+import java.sql.SQLException;
+import java.util.Map;
 import java.util.Random;
 
 import common.GameRoom;
@@ -13,6 +15,7 @@ import common.User;
 public class GameThread extends Thread {
 	private Socket socket = null;
 	private RoomDAO dao;
+	private MemberDAO mDAO;
 	private User user;
 	private GameRoom gr;
 	private int[] rolled = new int[5];
@@ -23,11 +26,17 @@ public class GameThread extends Thread {
 		this.user = user;
 		gr = user.getGr();
 		dao = RoomDAO.getInstance();
+		try {
+			mDAO = new MemberDAO();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void run() {
 		try {
+			
 			ObjectOutputStream oos = new ObjectOutputStream(socket.getOutputStream());
 			ObjectInputStream ois = new ObjectInputStream(socket.getInputStream());
 			for (GameRoom r : dao.getRoomlist()) {
@@ -47,7 +56,7 @@ public class GameThread extends Thread {
 //							String user1 = gr.getUsers().get(0).getNickname();
 //							String user2 = gr.getUsers().get(1).getNickname();
 							dao.broadcast(gr, "start::" + users[0] + "::" + users[1]);
-							getTurn(-1,-1);
+							getTurn(-1, -1);
 							break;
 						}
 					}
@@ -64,7 +73,15 @@ public class GameThread extends Thread {
 					dao.broadcast(gr, response.toString());
 				} else if ("turnEnd".contentEquals(tokens[0])) {
 					gr.setTurn(gr.getTurn() + 1);
-					getTurn(Integer.parseInt(tokens[1]),Integer.parseInt(tokens[2]));
+					int type = Integer.parseInt(tokens[1]);
+					int score = Integer.parseInt(tokens[2]);
+					setScore(type, score);
+					getTurn(type, score);
+				} else if ("endGame".contentEquals(tokens[0])) {
+					dao.endGame(gr, user);
+					user = mDAO.getUser(user.getId());
+					oos.writeObject(user);
+					break;
 				}
 			}
 		} catch (SocketException e) {
@@ -88,14 +105,22 @@ public class GameThread extends Thread {
 
 	public void getTurn(int type, int score) {
 		int turn = gr.getTurn();
+		int t_user = turn % 2;
+		int totalscore;
 		String response = "";
+		totalscore = gr.getUserScore((t_user+1)%2);
 		if (turn == 26) {
-			response = "gameSet";
-
+			response = "gameSet::" + users[t_user] + "::" + type + "::" + score + "::" + totalscore;
 			dao.broadcast(gr, response);
 		} else {
-			response = "isYourTurn::" + users[turn % 2]+"::"+type+"::"+score;
+			response = "isYourTurn::" + users[t_user] + "::" + type + "::" + score + "::" + totalscore;
 			dao.broadcast(gr, response);
 		}
+	}
+
+	public void setScore(int type, int score) {
+		Map<String, int[]> pre = gr.getScore();
+		pre.get(user.getId())[type] = score;
+		gr.setScore(pre);
 	}
 }

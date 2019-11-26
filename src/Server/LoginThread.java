@@ -10,9 +10,10 @@ import java.sql.SQLException;
 import common.User;
 
 public class LoginThread extends Thread {
-	private Socket socket=null;
+	private Socket socket = null;
 	MemberDAO dao;
 	User user;
+
 	public LoginThread(Socket socket) {
 		this.socket = socket;
 	}
@@ -25,10 +26,10 @@ public class LoginThread extends Thread {
 //			BufferedReader br;
 //			PrintWriter pw;
 			while (true) {
-				
+
 //				br = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
 //				pw = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8), true);
-				String request = (String)ois.readObject();
+				String request = (String) ois.readObject();
 				if (request == null) {
 					System.out.println("lost connect");
 					break;
@@ -41,7 +42,7 @@ public class LoginThread extends Thread {
 						user = dao.getUser(tokens[1]);
 						oos.writeObject(result);
 						oos.writeObject(user);
-						new RoomThread(user,socket).start();
+						new RoomThread(user, socket).start();
 						break;
 					} else {
 						oos.writeObject(result);
@@ -56,20 +57,26 @@ public class LoginThread extends Thread {
 					}
 				} else if ("join".contentEquals(tokens[0])) {
 					dao = new MemberDAO();
-					User user = new User(tokens[1],tokens[2],tokens[3],tokens[4],tokens[5]);
+					User user = new User(tokens[1], tokens[2], tokens[3], tokens[4], tokens[5]);
 					oos.writeObject(dao.join(user));
-				} else if("f_id".contentEquals(tokens[0])) {
+				} else if ("f_id".contentEquals(tokens[0])) {
 					dao = new MemberDAO();
 					oos.writeObject(dao.find_id(tokens[1], tokens[2]));
-				} else if("f_pass".contentEquals(tokens[0])) {
+				} else if ("f_pass".contentEquals(tokens[0])) {
 					dao = new MemberDAO();
 					oos.writeObject(dao.find_pass(tokens[1], tokens[2]));
-				} else if("c_pass".contentEquals(tokens[0])) {
+				} else if ("c_pass".contentEquals(tokens[0])) {
 					dao = new MemberDAO();
 					dao.change_pass(tokens[1], tokens[2]);
+				} else if ("reload".contentEquals(tokens[0])) {
+					dao = new MemberDAO();
+					System.out.println(request);
+					user = dao.getUser(tokens[1]);
+					new RoomThread(user, socket).start();
+					break;
 				}
 			}
-		} catch(SocketException e) {
+		} catch (SocketException e) {
 			System.out.println("[LoginThread]lost connection");
 		} catch (IOException e) {
 			e.printStackTrace();

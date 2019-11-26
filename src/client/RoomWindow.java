@@ -7,6 +7,8 @@ import java.awt.Graphics;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -17,6 +19,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.Border;
 
@@ -24,28 +27,31 @@ import common.User;
 
 public class RoomWindow extends JFrame {
 	private JPanel contentPane;
-	private JLabel me, me2, opponent, opponent2;
+	private JLabel me, me2, opponent, opponent2,mepoint,oppoint;
 	private JLabel[] opp = new JLabel[13];
 	private JButton roll;
 	private JButton[] buttons = new JButton[13];
 	private int[] checked = new int[13];
 	private int[] hold = new int[5];
+	private int[][] myroll = new int[2][5];
+	private int[] newroll = new int[5];
+	private int rollcount = 0;
+	private int type=0;
+	private int x = 87;
+	private int y = 32;
+	private int dicex = 20;
+	private int dicey = 645;
+	private int myscore=0;
+	private int score=0;
+	
 	private JButton[] dices = new JButton[5];
 	private ImageIcon[] diceImages = new ImageIcon[6];
 	private ImageIcon[] holdeddice = new ImageIcon[6];
 	private User user;
 	private Socket socket;
-	private int x = 87;
-	private int y = 32;
-	private int dicex = 20;
-	private int dicey = 645;
 	private ObjectOutputStream oos;
 	private ObjectInputStream ois;
-	private int[][] myroll = new int[2][5];
-	private int[] newroll = new int[5];
-	private int rollcount = 0;
-	private int type=0;
-	private String score=null;
+	
 	private Font font = new Font("SansSerif", Font.BOLD, 30);
 
 	public RoomWindow(User user, Socket socket) {
@@ -58,7 +64,7 @@ public class RoomWindow extends JFrame {
 		} catch (IOException e2) {
 			e2.printStackTrace();
 		}
-
+		
 		setTitle("Yahtzee");
 		setBounds(0, 0, 455, 845);
 		setLocationRelativeTo(null);
@@ -89,13 +95,15 @@ public class RoomWindow extends JFrame {
 				for (int i = 0; i < buttons.length; i++) {
 					if (e.getSource() == buttons[i]) {
 						type=i;
-						score = Integer.toString(calc(myroll));
-						buttons[i].setText(score);
+						score = calc(myroll);
+						buttons[i].setText(""+score);
 					}
 				}
 				try {
 					String request = "turnEnd::"+type+"::"+score;
+					myscore+=score;
 					oos.writeObject(request);
+					mepoint.setText("<html>나의 점수<br>"+myscore+"</html>");
 					for (int i = 0; i < myroll[1].length; i++) {
 						myroll[1][i] = 0;
 					}
@@ -130,7 +138,12 @@ public class RoomWindow extends JFrame {
 			add(opp[i]);
 			
 		}
-
+		mepoint = new JLabel("<html>나의 점수<br>0</html>");
+		oppoint = new JLabel("<html>상대방의 점수<br>0</html>");
+		mepoint.setBounds(5, 515, 100, 50);
+		oppoint.setBounds(120, 515, 100, 50);
+		add(mepoint);
+		add(oppoint);
 		// 주사위
 		for (int i = 0; i < diceImages.length; i++) {
 			diceImages[i] = new ImageIcon("img/dice" + (i + 1) + "_1.png");
@@ -168,6 +181,7 @@ public class RoomWindow extends JFrame {
 
 		roll = new JButton("주사위 굴리기");
 		roll.setBounds(0, 735, 450, 80);
+		roll.setFont(font);
 		roll.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -225,8 +239,17 @@ public class RoomWindow extends JFrame {
 											opp[i].setText(tokens[3]);
 										}
 									}
+									oppoint.setText("<html>상대방의 점수<br>"+tokens[4]+"</html>");
 								}
 								rollcount = 0;
+							}
+						}else if("gameSet".contentEquals(tokens[0])) {
+							if (!user.getNickname().contentEquals(tokens[1])) {
+								opp[Integer.parseInt(tokens[2])].setText(tokens[3]);
+								gameEnd();
+							}else {
+								oppoint.setText("<html>상대방의 점수<br>"+tokens[4]+"</html>");
+								gameEnd();
 							}
 						}
 					}
@@ -394,5 +417,24 @@ public class RoomWindow extends JFrame {
 			dices[i].setEnabled(false);
 		}
 		roll.setEnabled(false);
+	}
+	
+	public void gameEnd() {
+		String request = "endGame::";
+		try {
+			oos.writeObject(request);
+			user = (User)ois.readObject();
+		} catch (ClassNotFoundException|IOException e) {
+			e.printStackTrace();
+		}
+		String opscore = oppoint.getText();
+		int opScore = Integer.parseInt(opscore.split(">")[2].split("<")[0]);
+		if(myscore>opScore) {
+			JOptionPane.showMessageDialog(null, "이겼습니다!");
+		}else {
+			JOptionPane.showMessageDialog(null, "졌네요...");
+		}
+		new RoomList(user);
+		dispose();
 	}
 }
